@@ -8,5 +8,13 @@ This is implemented with python 3.7, Tkinter Matplotlib and SciPy and is a work 
 
 It is growing in functionality as new operations are added, increasingly from the numpy library. Plans are to add a function graphing capability via mathplotlib. I hope you follow allong and comment freely. Afterall, this is first and formost part of my learning experience.
 
-I have tried to open my thinking process to view by including mind maps, doodles and UML models as I develop and grow this application. The screenshot for Version 1.0P is below.
+I have tried to open my thinking process to view by including mind maps, doodles and UML models as I develop and grow this application. The screenshot for Version 1.25 is below.
+
+## Motivation
+  
+There are lots of calculators. There are even GUI based analytics tools. But a Data Science tool with a calculator paradigm is at best rare. My practice with SciPy/numpy and Matplotlib is an opportunity to play with the paradigm for application of data science functionality. Thugh simple, it is not envisioned as a toy app. There are I think lots on opportunities for a quick pop-up solution in mono and bivaraiate situations. Lets see how it grows. Comments are encourages. Enjoy.
+
+## Realization:
+
+I have already practiced with Tkinter buidling a RPN Calculator, [SimpleCalc.]()
 
