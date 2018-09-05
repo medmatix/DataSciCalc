@@ -1,2 +1,2 @@
-#Data Science Calculator Documentation
+# Data Science Calculator Documentation
 
