@@ -18,9 +18,11 @@ There are lots of calculators. There are even GUI based analytics tools. But a D
 
 I have already practiced with Tkinter buidling a RPN Calculator, [SimpleCalc.](https://medmatix.github.io/SimpleCalc/) With this starting point the interface is re-worked to include various kinds of input, simple variable <entry>, sequence of python <List> oriented input and PANDAS dataframe oriented CSV file import input. From the the button and menu actions had to be revised to adapt actions to the kind of input targeted.
   
-Initially an [interface sketch](https://github.com/medmatix/DataSciCalc/blob/master/GUI%20Layout%20Notes%20page_8.pdf) was prepared
+Initially I made an [interface sketch](https://github.com/medmatix/DataSciCalc/blob/master/GUI%20Layout%20Notes%20page_8.pdf) on graph paper.
 
 Next, the Tkinter GUI was rewritten.
 
 
-![ScreenShot1](DataSciCalc1.png) ![ScreenShot2](DataSciCalc2.png) ![ScreenShot3](DataSciCalc3.png)
+![ScreenShot1](DataSciCalc1.png) 
+  
+![ScreenShot2](DataSciCalc2.png) ![ScreenShot3](DataSciCalc3.png)
