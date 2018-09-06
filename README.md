@@ -10,7 +10,7 @@ It is growing in functionality as new operations are added, increasingly from th
 
 I have tried to open my thinking process to view by including mind maps, doodles and UML models as I develop and grow this application. The screenshot for Version 0 / 1.25 is below.
 
-[interface sketch](GUI Layout Notes page_8.pdf)
+#[interface sketch]("GUI Layout Notes page_8.pdf")
 
 ## Motivation
   
