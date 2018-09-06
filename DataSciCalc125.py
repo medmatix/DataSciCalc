@@ -91,7 +91,7 @@ class calcGUI():
         
         # Initialize widgets
         self.createWidgets()
-        self.inReg.focus()
+        self.xReg.focus()
     # ~~~ End class contruction / initializer ~~-----
     
     
@@ -156,11 +156,11 @@ class calcGUI():
 
 
         #  We are creating a container frame to tab1 widgets ============================
-        self.display = ttk.LabelFrame(tab1, text=' Display Registers ')
+        self.display = ttk.LabelFrame(tab1, text=' Inputs ')
         self.display.grid(column=0, row=0, padx=8, pady=4)
         
-        self.clears = ttk.LabelFrame(tab1)
-        self.clears.grid(column=0, row=5, padx=8, pady=4)
+        self.inputAction = ttk.LabelFrame(tab1)
+        self.inputAction.grid(column=0, row=5, padx=8, pady=4)
         
         # We are creating a frame to hold the a data block of text
         self.inKeys = ttk.LabelFrame(tab1, text=' Number Keys ')
@@ -173,34 +173,33 @@ class calcGUI():
         self.functKeys.grid(column=0, row=18, padx=8, pady=8)
         # Input field = current register
         # Creating a Label
-        ttk.Label(self.display, text="Input Field:").grid(column=0, row=0, sticky='W')
+        
  
         # Adding a Textbox Entry widget
-        self.inReg = ttk.Entry(self.display, width=68, text='Enter a number')
-        self.inReg.grid(column=0, row=1, sticky='W')
+        ttk.Label(self.display, text="  x ").grid(column=0, row=0, sticky='W')
+        self.xReg = ttk.Entry(self.display, width=68, text='x')
+        self.xReg.grid(column=1, row=0, sticky='W')
           
-        # Scrolling history field:
-        # Creating a Label
-        ttk.Label(self.display, text="Calculation History:").grid(column=0, row=3, sticky='W')
-        
-        # Using a scrolled Text control for review of action history
-        scrolW1  = 50; scrolH1  =  4
-        self.history = scrolledtext.ScrolledText(self.display, width=scrolW1, height=scrolH1, wrap=tk.WORD)
-        self.history.grid(column=0, row=4, padx=4, pady=4, sticky='WE', columnspan=3)
+        # Scrolling input field:
+        # Using a scrolled Text control for List entryy
+        scrolW1  = 30; scrolH1  =  2
+        ttk.Label(self.display, text="List").grid(column=0, row=2, sticky='W')
+        self.inL = scrolledtext.ScrolledText(self.display, width=scrolW1, height=scrolH1, wrap=tk.WORD)
+        self.inL.grid(column=1, row=2, padx=4, pady=4, sticky='WE', columnspan=3)
         
         # House keeping function buttons
         
-        self.clrCurReg = ttk.Button(self.clears, text=" CE ", command=lambda: ActionFunctions.do_clrCurRegr(self))
-        self.clrCurReg.grid(column=0, row=0, padx=4, pady=4)
+        self.clrx = ttk.Button(self.inputAction, text=" CE ", command=lambda: ActionFunctions.do_clrx(self))
+        self.clrx.grid(column=0, row=0, padx=4, pady=4)
 
-        self.clrAllReg = ttk.Button(self.clears, text=" CLR ", command=lambda: ActionFunctions.do_clrAllRegr(self))
-        self.clrAllReg.grid(column=1, row=0, padx=4, pady=4)
+        self.clrL = ttk.Button(self.inputAction, text=" CLR ", command=lambda: ActionFunctions.do_clrL(self))
+        self.clrL.grid(column=1, row=0, padx=4, pady=4)
         
-        self.prtHx = ttk.Button(self.clears, text=" PrtHx ", command=lambda: ActionFunctions.do_prtHistory(self))
-        self.prtHx.grid(column=2, row=0, padx=4, pady=4)
+        self.toList = ttk.Button(self.inputAction, text="  ENTER L  ", command=lambda: ActionFunctions.do_enterL(self))
+        self.toList.grid(column=2, row=0, padx=4, pady=4)
         
-        self.clrHx = ttk.Button(self.clears, text=" CLHx ", command=lambda: ActionFunctions.do_clrHistory(self))
-        self.clrHx.grid(column=3, row=0, padx=4, pady=4)
+        self.action_Entx = ttk.Button(self.inputAction, text="ENTER x", command=lambda: ActionFunctions.do_enterx(self))
+        self.action_Entx.grid(column=3, row=0, padx=4, pady=6)
 
         # Populate inKeys frame with the digit input keys (buttons)
         # Adding digit entry buttons 1 to 3
@@ -265,8 +264,7 @@ class calcGUI():
         self.action_div = ttk.Button(self.operKeys, text=" / ", command=lambda: ActionFunctions.do_div(self))
         self.action_div.grid(column=4, row=0, padx=4, pady=6)
         
-        self.action_equal = ttk.Button(self.operKeys, text="ENTER", command=lambda: ActionFunctions.do_enterReg(self))
-        self.action_equal.grid(column=5, row=0, padx=4, pady=6)
+        
         
         #=======================================================================
         # # bind <return/enter key to enter button
