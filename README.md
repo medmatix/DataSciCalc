@@ -20,7 +20,7 @@ I have already practiced with Tkinter buidling a RPN Calculator, [SimpleCalc.](h
   
 Initially I made an [interface sketch](https://github.com/medmatix/DataSciCalc/blob/master/GUI%20Layout%20Notes%20page_8.pdf) on graph paper.
 
-Next, the Tkinter GUI was rewritten.
+Next, the Tkinter GUI from SimpleCalc was rewritten.
 
 
 ![ScreenShot1](DataSciCalc1.png) 
