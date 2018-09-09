@@ -8,5 +8,6 @@
 <path>/${PROJECT_DIR_NAME}/datafiles</path>
 <path>/${PROJECT_DIR_NAME}/images</path>
 <path>/${PROJECT_DIR_NAME}/documentation</path>
+<path>/${PROJECT_DIR_NAME}</path>
 </pydev_pathproperty>
 </pydev_project>

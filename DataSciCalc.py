@@ -1,15 +1,17 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/python3                   ## linux shell script directive
+# -*- coding: utf-8 -*-              ## default character set selection
+
 '''
 
 DataSciCalc, Main Program Module
 
 Created on Sep 5, 2018
-@version: 0.0
+@version: 0.1
 @author: David A York
 @ copyright: 2018
 @note: revision and rewrite of SimpleCalc 1.23 as a data science desktop calculator application
 
-@license: LGPL, https://www.gnu.org/licenses/lgpl.html 
+@license: MIT, https://opensource.org/licenses/MIT
 
 '''
 
@@ -56,12 +58,6 @@ logHistoryName = "historyLog"
 # Class definitions
 #=====================================================
 
-
-
-
-
-    
-        
 class calcGUI():
     ''' 
     GUI building gui elements, element activation functions and variables for calcGUI Class
@@ -311,10 +307,10 @@ class calcGUI():
         self.action_deg2rad = ttk.Button(self.functKeys, text="deg>rad", command=lambda: ActionFunctions.do_deg2rad(self))
         self.action_deg2rad.grid(column=1, row=5, padx=4, pady=6)
         
-        self.action_sgn = ttk.Button(self.functKeys, text=" +/- ", command=lambda: ButtonActions.do_sgn(self))
+        self.action_sgn = ttk.Button(self.functKeys, text=" +/- ", command=lambda: ActionFunctions.do_sgn(self))
         self.action_sgn.grid(column=2, row=5, padx=4, pady=6)
         
-        self.action_blank = ttk.Button(self.functKeys, text="  ", command=lambda: ButtonActions.do_blank(self))
+        self.action_blank = ttk.Button(self.functKeys, text="  ", command=lambda: ActionFunctions.do_blank(self))
         self.action_blank.grid(column=3, row=5, padx=4, pady=6)
         
         #=======================================================================
