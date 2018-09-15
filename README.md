@@ -28,4 +28,4 @@ Next, the Tkinter GUI from SimpleCalc was rewritten.
   
 ![ScreenShot2](DataSciCalc2.png) ![ScreenShot3](DataSciCalc3.png)
   
-![ScreenShot2](DataSciCalc4.png) ![ScreenShot5](DataSciCalc3.png)
+![ScreenShot2](DataSciCalc4.png) ![ScreenShot5](DataSciCalc5.png)
