@@ -3,10 +3,10 @@
 
 '''
 
-DataSciCalc, Main Program Module
+DataSciCalc_oldest, Main Program Module
 
 Created on Sep 5, 2018
-@version: 0.1
+@version: 0.2
 @author: David A York
 @ copyright: 2018
 @note: revision and rewrite of SimpleCalc 1.23 as a data science desktop calculator application
@@ -26,14 +26,17 @@ from tkinter import Menu
 from tkinter import Canvas
 from tkinter import messagebox as mBox
 
+
 from os import path, makedirs
 import time
 from datetime import datetime
-
 import math
-from math import sqrt
-# module imports
 
+
+
+# module imports
+from ActionFunctions import ActionFunctions as af
+from InputFunctions import InputFunctions as infn
 
 # ~~~ End import section ~~~ =================
 
@@ -43,12 +46,14 @@ from math import sqrt
 # ===================================
 
 # module level  GLOBALS
-currentRegisterStr = ''
-currentVariable = 0.0
-operandTwo = 0.0
-operandThree = 0.0
-resultVariable = 0.0
-entFlag = False
+inxRegStr = ''
+inLRegStrg = ['']
+x = 0.0
+y = 0.0
+L = [0.0]
+resVar = 0.0
+xFlag = False
+Lflag = False
 logHistoryName = "historyLog"
 
 ## ~~~ END of Glogal Declarations ~~ =================
@@ -67,14 +72,16 @@ class calcGUI():
     
     # Class Constructor ------------------------------
     def __init__(self):
-        self.currentRegisterStr = ''
-        self.currentVariable = 0.0
-        self.operandTwo = 0.0
-        self.operandThree = 0.0
-        self.resultVariable = 0.0
-        self.entFlag = False
-        self.logHistoryName = "historyLog"
-   
+
+
+        self.inxRegStr = ''
+        self.inLRegStr = ''
+        self.x = 0.0
+        self.y = 0.0
+        self.L = [0.0]
+        self.resVar = 0.0
+        self.xFlag = False
+        self.Lflag = False   
         
         # Create instance
         self.win = tk.Tk()
@@ -83,11 +90,13 @@ class calcGUI():
         self.win.title("Data Science Calculator")
         
         # Add a icon
-        self.win.iconbitmap('./images/Number_cruncherCr2.ico')
+        #iconCruncher = tk.BitmapImage(file='./images/Number_cruncherCr2.xbm')
+        iconCruncher = './images/Number_cruncherCr2.ico'
+        self.win.iconbitmap(iconCruncher)
         
         # Initialize widgets
         self.createWidgets()
-        self.xReg.focus()
+        self.inxStr.focus()
     # ~~~ End class contruction / initializer ~~-----
     
     
@@ -101,7 +110,7 @@ class calcGUI():
     
     # -- make an messages and messageBoxes for GUI help and errors
     def info(self):
-        mBox.showinfo('About DataSciCalc', 'A Data Science Calculator\n (c) David A York, 2018\n http:crunches-data.appspot.com \nVersion: 1.23, development version\nlicense: MIT/X-Windows')
+        mBox.showinfo('About DataSciCalc_oldest', 'A Data Science Calculator\n (c) David A York, 2018\n http:crunches-data.appspot.com \nVersion: 1.23, development version\nlicense: MIT/X-Windows')
 
     # catch trying to cast a blank to a number
     def castError(self):
@@ -166,155 +175,154 @@ class calcGUI():
  
         # Adding a Entry widget for x input
         ttk.Label(self.display, text="  x ").grid(column=0, row=0, padx=4, pady=4,sticky='W')
-        self.xReg = ttk.Entry(self.display, width=68, text='x')
-        self.xReg.grid(column=1, row=0, padx=4, pady=4,sticky='W')
+        self.inxStr = ttk.Entry(self.display, width=68, text='x')
+        self.inxStr.grid(column=1, row=0, padx=4, pady=4,sticky='W')
           
         # Scrolling input field for L or y entry ( L is list of sequence entered, y is single number entered:
         # Using a scrolled Text control for List entry
         scrolW1  = 30; scrolH1  =  2
         ttk.Label(self.display, text="List").grid(column=0, row=2, padx=4, pady=4,sticky='W')
-        self.inL = scrolledtext.ScrolledText(self.display, width=scrolW1, height=scrolH1, wrap=tk.WORD)
-        self.inL.grid(column=1, row=2, padx=4, pady=4, sticky='WE', columnspan=3)
+        self.inLStr = scrolledtext.ScrolledText(self.display, width=scrolW1, height=scrolH1, wrap=tk.WORD)
+        self.inLStr.grid(column=1, row=2, padx=4, pady=4, sticky='WE', columnspan=3)
         
         # House keeping function buttons
-        
-        self.clrx = ttk.Button(self.inputAction, text=" CLR x ", command=lambda: ActionFunctions.do_clrx(self))
+        self.clrx = ttk.Button(self.inputAction, text=" CLR x ", command=lambda: af.do_clrx(self))
         self.clrx.grid(column=0, row=0, padx=4, pady=4)
 
-        self.clrL = ttk.Button(self.inputAction, text=" CLR L ", command=lambda: ActionFunctions.do_clrL(self))
+        self.clrL = ttk.Button(self.inputAction, text=" CLR L ", command=lambda: af.do_clrL(self))
         self.clrL.grid(column=1, row=0, padx=4, pady=4)
         
-        self.toList = ttk.Button(self.inputAction, text="  ENTER L  ", command=lambda: ActionFunctions.do_enterL(self))
+        self.toList = ttk.Button(self.inputAction, text="  ENTER L  ", command=lambda: af.do_enterL(self))
         self.toList.grid(column=2, row=0, padx=4, pady=4)
         
-        self.action_Entx = ttk.Button(self.inputAction, text="ENTER x", command=lambda: ActionFunctions.do_enterx(self))
-        self.action_Entx.grid(column=3, row=0, padx=4, pady=6)
+        self.action_toxVar = ttk.Button(self.inputAction, text="ENTER x", command=lambda: af.do_enterx(self))
+        self.action_toxVar.grid(column=3, row=0, padx=4, pady=6)
 
         # Populate inKeys frame with the digit input keys (buttons)
         # Adding digit entry buttons 1 to 3
         
-        self.action1 = ttk.Button(self.inKeys, text=" 1 ", command=lambda: ActionFunctions.append_digit1(self))
+        self.action1 = ttk.Button(self.inKeys, text=" 1 ", command=lambda: af.append_digit1(self))
         self.action1.grid(column=0, row=0, padx=4, pady=2)
 
-        self.action2 = ttk.Button(self.inKeys, text=" 2 ", command=lambda: ActionFunctions.append_digit2(self))
+        self.action2 = ttk.Button(self.inKeys, text=" 2 ", command=lambda: af.append_digit2(self))
         self.action2.grid(column=1, row=0, padx=4, pady=2)
         
-        self.action3 = ttk.Button(self.inKeys, text=" 3 ", command=lambda: ActionFunctions.append_digit3(self))
+        self.action3 = ttk.Button(self.inKeys, text=" 3 ", command=lambda: af.append_digit3(self))
         self.action3.grid(column=2, row=0, padx=4, pady=2)
         # Adding digit entry buttons 1 to 3
-        self.action4 = ttk.Button(self.inKeys, text=" 4 ", command=lambda: ActionFunctions.append_digit4(self))
+        self.action4 = ttk.Button(self.inKeys, text=" 4 ", command=lambda: af.append_digit4(self))
         self.action4.grid(column=0, row=2, padx=4, pady=2)
 
-        self.action5 = ttk.Button(self.inKeys, text=" 5 ", command=lambda: ActionFunctions.append_digit5(self))
+        self.action5 = ttk.Button(self.inKeys, text=" 5 ", command=lambda: af.append_digit5(self))
         self.action5.grid(column=1, row=2, padx=4, pady=2)
         
-        self.action6 = ttk.Button(self.inKeys, text=" 6 ", command=lambda: ActionFunctions.append_digit6(self))
+        self.action6 = ttk.Button(self.inKeys, text=" 6 ", command=lambda: af.append_digit6(self))
         self.action6.grid(column=2, row=2, padx=4, pady=2)
         # Adding digit entry buttons 1 to 3
-        self.action7 = ttk.Button(self.inKeys, text=" 7 ", command=lambda: ActionFunctions.append_digit7(self))
+        self.action7 = ttk.Button(self.inKeys, text=" 7 ", command=lambda: af.append_digit7(self))
         self.action7.grid(column=0, row=4, padx=4, pady=2)
 
-        self.action8 = ttk.Button(self.inKeys, text=" 8 ", command=lambda: ActionFunctions.append_digit8(self))
+        self.action8 = ttk.Button(self.inKeys, text=" 8 ", command=lambda: af.append_digit8(self))
         self.action8.grid(column=1, row=4, padx=4, pady=2)
         
-        self.action9 = ttk.Button(self.inKeys, text=" 9 ", command=lambda: ActionFunctions.append_digit9(self))
+        self.action9 = ttk.Button(self.inKeys, text=" 9 ", command=lambda: af.append_digit9(self))
         self.action9.grid(column=2, row=4, padx=4, pady=2)
         
-        self.action_pi = ttk.Button(self.inKeys, text=" pi ", command=lambda: ActionFunctions.get_pi(self))
+        self.action_pi = ttk.Button(self.inKeys, text=" pi ", command=lambda: af.get_pi(self))
         self.action_pi.grid(column=0, row=6, padx=4, pady=2)
         
-        self.action0 = ttk.Button(self.inKeys, text=" 0 ", command=lambda: ActionFunctions.append_digit0(self))
+        self.action0 = ttk.Button(self.inKeys, text=" 0 ", command=lambda: af.append_digit0(self))
         self.action0.grid(column=1, row=6, padx=4, pady=2)  
         
-        self.action_e = ttk.Button(self.inKeys, text=" e ", command=lambda: ActionFunctions.get_e(self))
+        self.action_e = ttk.Button(self.inKeys, text=" e ", command=lambda: af.get_e(self))
         self.action_e.grid(column=2, row=6, padx=4, pady=2)
                 
-        self.action_pi = ttk.Button(self.inKeys, text=" - ", command=lambda: ActionFunctions.get_pi(self))
+        self.action_pi = ttk.Button(self.inKeys, text=" - ", command=lambda: af.get_pi(self))
         self.action_pi.grid(column=0, row=7, padx=4, pady=2)
         
-        self.actiondec = ttk.Button(self.inKeys, text=" . ", command=lambda: ActionFunctions.append_dec(self))
+        self.actiondec = ttk.Button(self.inKeys, text=" . ", command=lambda: af.append_dec(self))
         self.actiondec.grid(column=1, row=7, padx=4, pady=2)
         
-        self.action_phi = ttk.Button(self.inKeys, text=" , ", command=lambda: ActionFunctions.get_phi(self))
-        self.action_phi.grid(column=2, row=7, padx=4, pady=2)
+        self.action_comma = ttk.Button(self.inKeys, text=" , ", command=lambda: af.append_comma(self))
+        self.action_comma.grid(column=2, row=7, padx=4, pady=2)
         
 
      
         #Populate function keys frame
-        self.action_add = ttk.Button(self.functKeys, text=" L + x ", command=lambda: ActionFunctions.do_add(self))
+        self.action_add = ttk.Button(self.functKeys, text=" L + x ", command=lambda: af.do_add(self))
         self.action_add.grid(column=0, row=0, padx=4, pady=6)
 
-        self.action_subt = ttk.Button(self.functKeys, text=" L - x ", command=lambda: ActionFunctions.do_subt(self))
+        self.action_subt = ttk.Button(self.functKeys, text=" L - x ", command=lambda: af.do_subt(self))
         self.action_subt.grid(column=1, row=0, padx=4, pady=6)
         
-        self.action_mult = ttk.Button(self.functKeys, text=" L * x ", command=lambda: ActionFunctions.do_mult(self))
+        self.action_mult = ttk.Button(self.functKeys, text=" L * x ", command=lambda: af.do_mult(self))
         self.action_mult.grid(column=2, row=0, padx=4, pady=6)
         
-        self.action_div = ttk.Button(self.functKeys, text=" L / x ", command=lambda: ActionFunctions.do_div(self))
+        self.action_div = ttk.Button(self.functKeys, text=" L / x ", command=lambda: af.do_div(self))
         self.action_div.grid(column=3, row=0, padx=4, pady=6)
         
-        self.action_sumL = ttk.Button(self.functKeys, text=" sum L ", command=lambda: ActionFunctions.do_xpowy(self))
+        self.action_sumL = ttk.Button(self.functKeys, text=" sum L ", command=lambda: af.do_xpowy(self))
         self.action_sumL.grid(column=0, row=1, padx=4, pady=6)
 
-        self.action_prodL = ttk.Button(self.functKeys, text=" prod L ", command=lambda: ActionFunctions.do_sqrt(self))
+        self.action_prodL = ttk.Button(self.functKeys, text=" prod L ", command=lambda: af.do_sqrt(self))
         self.action_prodL.grid(column=1, row=1, padx=4, pady=6)
         
-        self.action_inverseL = ttk.Button(self.functKeys, text=" 1/L ", command=lambda: ActionFunctions.do_invert(self))
+        self.action_inverseL = ttk.Button(self.functKeys, text=" 1/L ", command=lambda: af.do_invert(self))
         self.action_inverseL.grid(column=2, row=1, padx=4, pady=6)
         
-        self.action_Lpowerx = ttk.Button(self.functKeys, text=" L^2 ", command=lambda: ActionFunctions.do_power2(self))
+        self.action_Lpowerx = ttk.Button(self.functKeys, text=" L^2 ", command=lambda: af.do_power2(self))
         self.action_Lpowerx.grid(column=3, row=1, padx=4, pady=6)
         
-        self.action_sin = ttk.Button(self.functKeys, text="sin", command=lambda: ActionFunctions.do_sin(self))
+        self.action_sin = ttk.Button(self.functKeys, text="sin", command=lambda: af.do_sin(self))
         self.action_sin.grid(column=0, row=2, padx=4, pady=6)
         
-        self.action_cos = ttk.Button(self.functKeys, text="cos", command=lambda: ActionFunctions.do_cos(self))
+        self.action_cos = ttk.Button(self.functKeys, text="cos", command=lambda: af.do_cos(self))
         self.action_cos.grid(column=1, row=2, padx=4, pady=6)
         
-        self.action_tan = ttk.Button(self.functKeys, text="tan", command=lambda: ActionFunctions.do_tan(self))
+        self.action_tan = ttk.Button(self.functKeys, text="tan", command=lambda: af.do_tan(self))
         self.action_tan.grid(column=2, row=2, padx=4, pady=6)
         
-        self.action_acos = ttk.Button(self.functKeys, text="acos", command=lambda: ActionFunctions.do_acos(self))
+        self.action_acos = ttk.Button(self.functKeys, text="acos", command=lambda: af.do_acos(self))
         self.action_acos.grid(column=3, row=2, padx=4, pady=6)
         
-        self.action_asin = ttk.Button(self.functKeys, text="asin", command=lambda: ActionFunctions.do_asin(self))
+        self.action_asin = ttk.Button(self.functKeys, text="asin", command=lambda: af.do_asin(self))
         self.action_asin.grid(column=0, row=3, padx=4, pady=6)
         
-        self.action_atan = ttk.Button(self.functKeys, text="atan", command=lambda: ActionFunctions.do_atan(self))
+        self.action_atan = ttk.Button(self.functKeys, text="atan", command=lambda: af.do_atan(self))
         self.action_atan.grid(column=1, row=3, padx=4, pady=6)
         
-        self.action_log10L = ttk.Button(self.functKeys, text=" log10 L", command=lambda: ActionFunctions.do_log10(self))
+        self.action_log10L = ttk.Button(self.functKeys, text=" log10 L", command=lambda: af.do_log10(self))
         self.action_log10L.grid(column=2, row=3, padx=4, pady=6)
         
-        self.action_10powL = ttk.Button(self.functKeys, text=" 10^L", command=lambda: ActionFunctions.do_log10(self))
+        self.action_10powL = ttk.Button(self.functKeys, text=" 10^L", command=lambda: af.do_log10(self))
         self.action_10powL.grid(column=3, row=3, padx=4, pady=6)
         
-        self.action_lnL = ttk.Button(self.functKeys, text=" ln L ", command=lambda: ActionFunctions.do_ln(self))
+        self.action_lnL = ttk.Button(self.functKeys, text=" ln L ", command=lambda: af.do_ln(self))
         self.action_lnL.grid(column=0, row=4, padx=4, pady=6)
         
-        self.action_expL = ttk.Button(self.functKeys, text="exp(L)", command=lambda: ActionFunctions.do_exp(self))
+        self.action_expL = ttk.Button(self.functKeys, text="exp(L)", command=lambda: af.do_exp(self))
         self.action_expL.grid(column=1, row=4, padx=4, pady=6)
         
-        self.action_xroot = ttk.Button(self.functKeys, text="L^1/x", command=lambda: ActionFunctions.do_exp(self))
+        self.action_xroot = ttk.Button(self.functKeys, text="L^1/x", command=lambda: af.do_exp(self))
         self.action_xroot.grid(column=2, row=4, padx=4, pady=6)
         
-        self.action_Lpowx = ttk.Button(self.functKeys, text="L^x", command=lambda: ActionFunctions.do_exp(self))
+        self.action_Lpowx = ttk.Button(self.functKeys, text="L^x", command=lambda: af.do_exp(self))
         self.action_Lpowx.grid(column=3, row=4, padx=4, pady=6)
         
-        self.action_xchL = ttk.Button(self.functKeys, text="x <> L", command=lambda: ActionFunctions.do_exp(self))
+        self.action_xchL = ttk.Button(self.functKeys, text="x <> L", command=lambda: af.do_exp(self))
         self.action_xchL.grid(column=0, row=5, padx=4, pady=6)
         
-        self.action_deg2rad = ttk.Button(self.functKeys, text="deg>rad", command=lambda: ActionFunctions.do_deg2rad(self))
+        self.action_deg2rad = ttk.Button(self.functKeys, text="deg>rad", command=lambda: af.do_deg2rad(self))
         self.action_deg2rad.grid(column=1, row=5, padx=4, pady=6)
         
-        self.action_sgn = ttk.Button(self.functKeys, text=" +/- ", command=lambda: ActionFunctions.do_sgn(self))
+        self.action_sgn = ttk.Button(self.functKeys, text=" +/- ", command=lambda: af.do_sgn(self))
         self.action_sgn.grid(column=2, row=5, padx=4, pady=6)
         
-        self.action_blank = ttk.Button(self.functKeys, text="  ", command=lambda: ActionFunctions.do_blank(self))
+        self.action_blank = ttk.Button(self.functKeys, text="  ", command=lambda: af.do_blank(self))
         self.action_blank.grid(column=3, row=5, padx=4, pady=6)
         
         #=======================================================================
-        # self.action_unasgn = ttk.Button(self.functKeys, text="unasgn", command=lambda: ActionFunctions.do_blank(self))
+        # self.action_unasgn = ttk.Button(self.functKeys, text="unasgn", command=lambda: af.do_blank(self))
         # self.action_unasgn.grid(column=4, row=2, padx=4, pady=6)
         #=======================================================================
         
@@ -327,23 +335,48 @@ class calcGUI():
         self.notesctl = ttk.LabelFrame(self.notes)
         self.notesctl.grid(column=0, row=0, padx=8, pady=4, sticky='W')
         
-        scrolW1  = 50; scrolH1  =  20
+        scrolW1  = 53; scrolH1  =  20
         self.scr_notes = scrolledtext.ScrolledText(self.notes, width=scrolW1, height=scrolH1, wrap=tk.WORD)
         self.scr_notes.grid(column=0, row=6, padx=4, pady=4, sticky='WE', columnspan=3)
         
-        self.action_clrnotes = ttk.Button(self.notesctl, text="CLEAR", command=lambda: ActionFunctions.do_clr_notes(self, self.scr_notes))
+        self.action_clrnotes = ttk.Button(self.notesctl, text="CLEAR", command=lambda: af.do_clr_notes(self, self.scr_notes))
         self.action_clrnotes.grid(column=0, row=0, padx=4, pady=6)
         
-        self.action_prtnotes = ttk.Button(self.notesctl, text="PRINT", command=lambda: ActionFunctions.do_prt_notes(self, self.scr_notes))
+        self.action_prtnotes = ttk.Button(self.notesctl, text="PRINT", command=lambda: af.do_prt_notes(self, self.scr_notes))
         self.action_prtnotes.grid(column=1, row=0, padx=4, pady=6)
         
-        self.action_lognotes = ttk.Button(self.notesctl, text="LOG IT", command=lambda: ActionFunctions.do_log_notes(self))
+        self.action_lognotes = ttk.Button(self.notesctl, text="LOG IT", command=lambda: af.do_log_notes(self))
         self.action_lognotes.grid(column=2, row=0, padx=4, pady=6)
-        self.action_savenotes = ttk.Button(self.notesctl, text="SAVE", command=lambda: ActionFunctions.do_save_notes(self))
+        self.action_savenotes = ttk.Button(self.notesctl, text="SAVE", command=lambda: af.do_save_notes(self))
         self.action_savenotes.grid(column=3, row=0, padx=4, pady=6)
-        self.action_menunotes = ttk.Button(self.notesctl, text="MENU", command=lambda: ActionFunctions.do_note(self))
+        self.action_menunotes = ttk.Button(self.notesctl, text="MENU", command=lambda: af.do_note(self))
         self.action_menunotes.grid(column=4, row=0, padx=4, pady=6)
         
+        self.history = ttk.LabelFrame(tab2, text=' History ')
+        self.history.grid(column=0, row=30, padx=8, pady=4, sticky='W')
+        
+        self.historyctl = ttk.LabelFrame(self.history)
+        self.historyctl.grid(column=0, row=0, padx=8, pady=4, sticky='W')
+        
+        # history display field (not used
+        scrolW1  = 53; scrolH1  =  4
+        self.history = scrolledtext.ScrolledText(self.history, width=scrolW1, height=scrolH1, wrap=tk.WORD)
+        self.history.grid(column=0, row=6, padx=4, pady=4, sticky='WE', columnspan=3)
+
+        self.action_clrhistory = ttk.Button(self.historyctl, text="CLEAR", command=lambda: af.do_clr_history(self, self.scr_history))
+        self.action_clrhistory.grid(column=0, row=0, padx=4, pady=6)
+        
+        self.action_prthistory = ttk.Button(self.historyctl, text="PRINT", command=lambda: af.do_prt_history(self, self.scr_history))
+        self.action_prthistory.grid(column=1, row=0, padx=4, pady=6)
+        
+        self.action_loghistory = ttk.Button(self.historyctl, text="LOG IT", command=lambda: af.do_log_history(self))
+        self.action_loghistory.grid(column=2, row=0, padx=4, pady=6)
+        
+        self.action_savehistory = ttk.Button(self.historyctl, text="SAVE", command=lambda: af.do_save_history(self))
+        self.action_savehistory.grid(column=3, row=0, padx=4, pady=6)
+        
+        self.action_savehistory = ttk.Button(self.historyctl, text=" ", command=lambda: af.do_blank(self))
+        self.action_savehistory.grid(column=4, row=0, padx=4, pady=6)
         
         
         
@@ -375,8 +408,27 @@ class calcGUI():
         # Creating a container frame to hold tab4 widgets
         self.statistics = ttk.LabelFrame(tab4, text=' A Statistical Applications Interface ')
         self.statistics.grid(column=0, row=3, padx=8, pady=4, sticky='W')
-        ttk.Label(self.statistics, text="Statistics:  this application functionality has not yet been implemented ........        ").grid(column=0, row=5, sticky='W')
+        self.statsctl = ttk.LabelFrame(self.statistics, text='Dataset')
+        self.statsctl.grid(column=0, row=0, padx=8, pady=4, sticky='W')
           
+        self.get_Dataset = ttk.Button(self.statsctl, text="Select", command=lambda: af.do_blank(self))
+        self.get_Dataset.grid(column=0, row=0, padx=4, pady=4)
+
+        self.prt_Dataset = ttk.Button(self.statsctl, text=" Print ", command=lambda: af.do_blank(self))
+        self.prt_Dataset.grid(column=1, row=0, padx=4, pady=4)
+        
+        self.grph_Dataset = ttk.Button(self.statsctl, text="  Graph  ", command=lambda: af.do_blank(self))
+        self.grph_Dataset.grid(column=2, row=0, padx=4, pady=4)
+        
+        self.save_Dataset = ttk.Button(self.statsctl, text="Save", command=lambda: af.do_blank(self))
+        self.save_Dataset.grid(column=3, row=0, padx=4, pady=6)
+        
+        self.funct_Dataset = ttk.Button(self.statsctl, text="Analyze", command=lambda: af.do_blank(self))
+        self.funct_Dataset.grid(column=4, row=0, padx=4, pady=6)
+        
+        ttk.Label(self.statistics, text="    Statistics:  this application functionality has not yet been implemented ..........        ", foreground='red').grid(column=0, row=35, sticky='W')
+       
+        
         
         # Creating a container frame to hold tab5 graphing widgets 
         self.graphical = ttk.LabelFrame(tab5, text=' Graphical Output ')
@@ -384,10 +436,22 @@ class calcGUI():
          
         # Adding a graphic window (canvas widget)
         gw = Canvas(self.graphical, width=415, height=550)
-        gw.create_text(60,10, text="Not yet implemented")
+               
+        gw.create_rectangle(20, 20, 300, 200, fill="blue") 
+        gw.create_line(20, 120, 220, 20, fill="red", dash=(4, 4))
+        gw.create_text(160,10, fill='green', font='Calabri',  text="Nice Fudged Graph")
+        gw.create_text(155,120, fill='white', text="Graphics NOT yet implemented")
+        gw.create_text(5,100,text="Y")
+        gw.create_text(165,206,  text="X")
+        #=======================================================================
+        # img = ImageTk.PhotoImage(file='D:/git/DataSciCalc/images/DNA-tree-crop2-alpha.gif')
+        #=======================================================================
+        #=======================================================================
+        # gw.create_image(55,130,image=img)
+        #=======================================================================
         gw.grid(column=0, row=1, padx=8, pady=4, sticky='W')
                
-        
+
         # Creating a Menu Bar ---------------------------------------------------------------------
         menuBar = Menu(tab1)
         self.win.config(menu=menuBar)
@@ -430,668 +494,7 @@ class calcGUI():
 # ~~ End of TKGUI CLass =======================================================        
         
         
-class ActionFunctions():
-    '''
-    GUI element activation Function calls, actions called in response to button presses
-    General Mathematical and Statistical helper Functions for callbacks etc.
-    
-    '''
 
-    '''
-    Constructor for ActionFunction selt tests
-
-    '''
-    def __init__(self):
-        print("initialized ActionFunctions")
-
-    # module variables and constants 
-
-    ''' Register and variable cleanup functions '''
-    def do_clrCurRegr(self):
-        # clear the entry in the current input register
-        self.currentRegisterStr = ''
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)
-        print('cleared current register')
-
-    def do_clrAllRegr(self):
-        # clear all the registers and variables for a  new calculation stream
-        self.currentRegisterStr = ''
-        self.inReg.delete(0, tk.END)
-        self.currentVariable = 0.0
-        self.operandTwo = 0.0
-        self.operandThree = 0.0
-        self.resultVariable = 0.0
-        # log action to history 
-        self.history.insert(tk.END, 'CLEAR ALL  ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)
-        print('cleared all registers and variables')
-        print('current Register: ' + self.currentRegisterStr)
-        print('current Variable: ' + str(self.currentVariable))
-        print('Operand 2 Variable: ' + str(self.operandTwo))
-    
-    def do_clrHistory(self):
-        # clear the calculation history
-        self.history.delete(1.0,tk.END)
-        #self.history.insert(tk.END, 'CLEAR HISTORY\n')
-        self.history.see(tk.END)
-        print('cleared the calculation history')
-        
-    def do_prtHistory(self):
-        print("\n Calculation history:\n")
-        print(self.history.get(1.0, tk.END) + '\n')  # to Console
-        self.history.insert(tk.END, 'PRINT HISTORY\n')
-        self.history.see(tk.END)
-        self.historyToDialog()  # and show in a dialog
-        
-    # appending digits to input    
-    
-    def append_digit0(self):        
-        self.currentRegisterStr = self.currentRegisterStr +'0'        
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)    
-        self.entFlag = False
-        print(self.currentRegisterStr)  
-        print(0)            # check on value
-        
-    def append_digit1(self):        
-        self.currentRegisterStr = self.currentRegisterStr + '1' 
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)  
-        self.entFlag = False  
-        print(self.currentRegisterStr)              # check on value
-        print(1)    
-        
-    def append_digit2(self):
-        self.currentRegisterStr = self.currentRegisterStr + '2'        
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)    
-        self.entFlag = False
-        print(self.currentRegisterStr) 
-        print(2)
-        
-    def append_digit3(self):
-        self.currentRegisterStr = self.currentRegisterStr + '3'        
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)
-        self.entFlag = False
-        print(self.currentRegisterStr) 
-        print(3)
-        
-    def append_digit4(self):
-        self.currentRegisterStr = self.currentRegisterStr + '4'        
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)
-        self.entFlag = False
-        print(self.currentRegisterStr) 
-        print(4)    
-        
-    def append_digit5(self):
-        self.currentRegisterStr = self.currentRegisterStr + '5'        
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)
-        self.entFlag = False
-        print(self.currentRegisterStr) 
-        print(5)
-        
-    def append_digit6(self):
-        self.currentRegisterStr = self.currentRegisterStr + '6'        
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)
-        self.entFlag = False
-        print(self.currentRegisterStr) 
-        print(6)
-        
-    def append_digit7(self):
-        self.currentRegisterStr = self.currentRegisterStr + '7'        
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)
-        self.entFlag = False
-        print(self.currentRegisterStr) 
-        print(7)    
-        
-    def append_digit8(self):
-        self.currentRegisterStr = self.currentRegisterStr + '8'        
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)    
-        self.entFlag = False
-        print(self.currentRegisterStr) 
-        print(8)
-        
-    def append_digit9(self):
-        self.currentRegisterStr = self.currentRegisterStr + '9'        
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)
-        self.entFlag = False
-        print(self.currentRegisterStr) 
-        print(9)
-    def append_minsgn(self):
-        self.currentRegisterStr = self.currentRegisterStr + '-'        
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)    
-        self.entFlag = False
-        print(self.currentRegisterStr) 
-        print('-')
-        
-    def append_dec(self):
-        self.currentRegisterStr = self.currentRegisterStr + '.'        
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, self.currentRegisterStr)
-        self.entFlag = False
-        print(self.currentRegisterStr) 
-        print('.')
-
-
-    # doing operations and functions ------------------------------------------
-    def do_add(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # add variables entered together
-        self.resultVariable = self.operandTwo + self.currentVariable
-        # log action to history 
-        self.history.see(tk.END)
-        # clear register before transfering result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'SUM  ' + str(self.resultVariable) + '\n')
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-        print("adding")
-        print("sum is {}".format(self.resultVariable))
-        
-    def do_subt(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # subtract variables entered 
-        self.resultVariable = self.operandTwo - self.currentVariable
-        # log action to history 
-        self.history.see(tk.END)
-        # clear register before transfering result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'DIFF  ' + str(self.resultVariable) + '\n')
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("subtracting")
-        print("difference is {}".format(self.resultVariable))
-        
-    def do_mult(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # multiply variables entered 
-        self.resultVariable = self.operandTwo * self.currentVariable
-        # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transfering result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'PROD  ' + str(self.resultVariable) + '\n')
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-        print("multiplying")
-        print("product is {}".format(self.resultVariable))
-        
-    def do_div(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # divide variables entered, second from first         
-        try:
-            self.resultVariable = self.operandTwo / self.currentVariable
-        except:
-            self.improperInputError()
-            return
-        
-        # log action to history 
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'DIVD  ' + str(self.resultVariable) + '\n')
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("dividing")
-        print("dividend is {}".format(self.resultVariable))
-        
-    def do_enterReg(self):
-        self.operandTwo = self.currentVariable
-        try:
-            self.currentVariable=float(self.inReg.get())
-        except:
-            self.castError()
-            print("the input can't be blank, a '0' is atleast needed")
-        ActionFunctions.do_clrCurRegr(self)
-        # log action to history 
-        self.history.insert(tk.END, 'ENTERED  ' + str(self.currentVariable) + '\n')
-        self.history.see(tk.END)
-        self.entFlag = True
-        self.inReg.focus()
-        print('current Register: ' + self.currentRegisterStr)
-        print('current Variable: ' + str(self.currentVariable))
-        print("Entered current register into current variable and clear current register")
-        print('Operand 2 Variable: ' + str(self.operandTwo))
-        
-    def do_xpowy(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        self.resultVariable = (self.operandTwo)**(self.currentVariable)
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'x^y  ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        # do something else to (x)
-        print('x^y')
-        print("y power of x is {}".format(self.resultVariable))
-        
-    def do_sqrt(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate sqrt(x)
-        self.resultVariable = math.sqrt(self.currentVariable)
-                # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'SQRT  ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("square of x is {}".format(self.resultVariable))
-        print('sqrt')
-        
-    def do_invert(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate square of (x)
-        self.resultVariable = 1/self.currentVariable
-        # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'INVERSE  ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("inverse of x is {}".format(self.resultVariable))
-        print('inverse')
-        print('inverse of x')
-        # calculate inverse (x)
-        print('inverted x')
-    
-    def do_power2(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate square of (x)
-        self.resultVariable = self.currentVariable**2
-                # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'POWER2  ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("square of x is {}".format(self.resultVariable))
-        print('sqrt')
-        print('squared x')
-    
-    def do_sgn(self):
-        # check for entered button
-        if not self.entFlag:
-            ActionFunctions.do_enterReg(self)
-        # do change of sign too (x)
-        self.currentVariable = self.currentVariable * -1
-        # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.currentVariable))
-        self.history.insert(tk.END, ' +/- ' + str(self.currentVariable) + '\n')
-        self.history.see(tk.END)
-        print("sign changed, x is now {}".format(self.currentVariable))
-        print('change of sign')
-    
-    def do_cos(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate cos(x) (x in radians!!!
-        self.resultVariable = math.cos(self.currentVariable)
-                # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'COS ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("cosine of x is {}".format(self.resultVariable))
-        print('cosine')
-        
-    def do_sin(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate sqrt(x)
-        self.resultVariable = math.sin(self.currentVariable)
-                # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'SIN ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print(" sine of x is {}".format(self.resultVariable))
-        print('sine')
-        
-    def do_tan(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate tangent(x)
-        self.resultVariable = math.tan(self.currentVariable)
-                # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'TAN  ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("tangent of x is {}".format(self.resultVariable))
-        print('tangent')
-        
-    def do_acos(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate cos(x) (x in radians!!!
-        self.resultVariable = math.acos(self.currentVariable)
-                # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'COS ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("cosine of x is {}".format(self.resultVariable))
-        print('cosine')
-        
-    def do_asin(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate sqrt(x)
-        self.resultVariable = math.asin(self.currentVariable)
-                # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'SIN ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print(" sine of x is {}".format(self.resultVariable))
-        print('sine')
-        
-    def do_atan(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate tangent(x)
-        self.resultVariable = math.atan(self.currentVariable)
-                # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'TAN  ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("tangent of x is {}".format(self.resultVariable))
-        print('tangent')
-    def do_log10(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate base 10 log(x)
-        try:
-            self.resultVariable = math.log10(self.currentVariable)
-        except:
-            self.improperInputError()
-            return
-        # log action to history 
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'LOG10  ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("log10 of x is {}".format(self.resultVariable))
-        print('LOG')
-        
-    def do_ln(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate natural log(x)
-        try:
-            self.resultVariable = math.log(self.currentVariable)
-        except:
-            self.improperInputError()
-            return
-        
-        # log action to history 
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'LN  ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("ln of x is {}".format(self.resultVariable))
-        print('ln')
-        
-    def get_pi(self):
-        # get constant pi
-        self.currentVariable = math.pi
-        # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.currentVariable))
-        self.history.insert(tk.END, ' PI ' + str(self.currentVariable) + '\n')
-        self.history.see(tk.END)
-        self.entFlag = True
-        self.inReg.focus()
-        print("PI is {}".format(self.currentVariable))
-        print('pi ')
-        
-    def do_exp(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # calculate exp(x)
-        self.resultVariable = math.exp(self.currentVariable)
-                # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'EXP  ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("exp of x is {}".format(self.resultVariable))
-        print('exp()')
-        
-    def get_e(self):
-        # get constant e
-        self.currentVariable = math.e
-        # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.currentVariable))
-        self.history.insert(tk.END, ' e is ' + str(self.currentVariable) + '\n')
-        self.history.see(tk.END)
-        self.entFlag = True
-        self.inReg.focus()
-        print("e is {}".format(self.currentVariable))
-        print(' e ')
-        
-    def get_phi(self):
-        # calculate PHI - golden ratio
-        self.currentVariable = (1 + sqrt(5))/2
-        # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.currentVariable))
-        self.history.insert(tk.END, ' PHI is ' + str(self.currentVariable) + '\n')
-        self.history.see(tk.END)
-        self.entFlag = True
-        self.inReg.focus()
-        print("golden ratio (PHI) is {}".format(self.currentVariable))
-        print(" phi ")
-        
-    def do_deg2rad(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        # convert degrees in x to radians (x)
-        self.resultVariable = math.radians(self.currentVariable)
-                # log action to history 
-        
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        self.inReg.delete(0,tk.END)
-        self.inReg.insert(tk.INSERT, str(self.resultVariable))
-        self.history.insert(tk.END, 'DEG2RAD  ' + str(self.resultVariable) + '\n')
-        self.history.see(tk.END)
-        # set up for chain operation
-        ActionFunctions.do_enterReg(self)
-
-        print("Deg to Radians of x is {}".format(self.resultVariable))
-        print('DEG2RAD')
-    
-    def do_blank(self):
-        # check for entered button
-        if not self.entFlag:
-            self.arithmeticError()
-            return
-        self.history.insert(tk.END, 'NOP  \n')
-        self.history.see(tk.END)
-        # do something else to (x)
-        print('unused key')
-        
-    def do_note(self):
-        # check for entered button
-        # do something else to (x)
-        self.underConstruction()
-        print('note function')
-    
-    def do_clr_notes(self, scr_notes):
-        # clear the calculation history
-        scr_notes.delete(1.0,tk.END)
-        #self.history.insert(tk.END, 'CLEAR HISTORY\n')
-        scr_notes.see(tk.END)
-        print('cleared the notes pad')
-        
-    def do_prt_notes(self, scr_notes):
-        print("\n Notes:\n")
-        print(scr_notes.get(1.0, tk.END) + '\n')  # to Console
-        self.history.insert(tk.END, 'PRINT NOTES \n')
-        self.history.see(tk.END)
-        self.notesToDialog()  # and show in a dialog
-        
-    def do_log_notes(self):
-        self.history.insert(tk.END, self.scr_notes.get(1.0, tk.END) + '\n')
-        self.history.see(tk.END)
-        
-    def do_save_notes(self):
-        notesFile = 'CalcNotes' + '.note'
-        notesFolder = './Notes/'
-        if not path.exists(notesFolder):
-            makedirs(notesFolder, exist_ok = True)
-        openedFile = open(notesFolder + notesFile,"w")
-        openedFile.write(self.scr_notes.get(1.0, tk.END) + '\n')
-        openedFile.close()
-        self.history.insert(tk.END, 'SAVED NOTES \n')
-        self.history.see(tk.END)
-        print("save finished")
 #======================
 # Start GUI
 #======================

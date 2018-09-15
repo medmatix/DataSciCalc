@@ -3,7 +3,7 @@
 
 '''
 
-DataSciCalc, Main Program Module
+DataSciCalc_oldest, Main Program Module
 
 Created on Sep 5, 2018
 @version: 0.1
@@ -106,7 +106,7 @@ class calcGUI():
     
     # -- make an messages and messageBoxes for GUI help and errors
     def info(self):
-        mBox.showinfo('About DataSciCalc', 'A Data Science Calculator\n (c) David A York, 2018\n http:crunches-data.appspot.com \nVersion: 1.23, development version\nlicense: MIT/X-Windows')
+        mBox.showinfo('About DataSciCalc_oldest', 'A Data Science Calculator\n (c) David A York, 2018\n http:crunches-data.appspot.com \nVersion: 1.23, development version\nlicense: MIT/X-Windows')
 
     # catch trying to cast a blank to a number
     def castError(self):

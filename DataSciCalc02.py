@@ -3,7 +3,7 @@
 
 '''
 
-DataSciCalc, Main Program Module
+DataSciCalc_oldest, Main Program Module
 
 Created on Sep 5, 2018
 @version: 0.15
@@ -18,6 +18,7 @@ Created on Sep 5, 2018
 #======================================================
 # imports
 #======================================================
+
 # standard library imports
 import tkinter as tk
 from tkinter import ttk
@@ -26,25 +27,24 @@ from tkinter import Menu
 from tkinter import Canvas
 from tkinter import messagebox as mBox
 
-
 from os import path, makedirs
+import sys as sys
 import time
 from datetime import datetime
 import math
 
-
-# module imports
+# other module imports
 from ActionFunctions import ActionFunctions as af
 from InputFunctions import InputFunctions as infn
 
-# ~~~ End import section ~~~ =================
+# ~~~ End import section ~~~ =========================
 
 
-# ===================================
+# ====================================================
 # GlobalVariables and Constants
-# ===================================
+# ====================================================
 
-# module level  GLOBALS
+# module level  GLOBALS 
 inxRegStr = ''
 inLRegStrg = ['']
 x = 0.0
@@ -52,7 +52,7 @@ y = 0.0
 L = [0.0]
 resVar = 0.0
 xFlag = False
-Lflag = False
+Lflag = True
 logHistoryName = "historyLog"
 
 ## ~~~ END of Glogal Declarations ~~ =================
@@ -80,7 +80,7 @@ class calcGUI():
         self.L = [0.0]
         self.resVar = 0.0
         self.xFlag = False
-        self.Lflag = False   
+        self.Lflag = True   
         
         # Create instance
         self.win = tk.Tk()
@@ -89,7 +89,8 @@ class calcGUI():
         self.win.title("Data Science Calculator")
         
         # Add a icon
-        self.win.iconbitmap('./images/Number_cruncherCr2.ico')
+        if not sys.platform.startswith('linux'):
+            self.win.iconbitmap('./images/Number_cruncherCr2.ico')
         
         # Initialize widgets
         self.createWidgets()
@@ -107,7 +108,7 @@ class calcGUI():
     
     # -- make an messages and messageBoxes for GUI help and errors
     def info(self):
-        mBox.showinfo('About DataSciCalc', 'A Data Science Calculator\n (c) David A York, 2018\n http:crunches-data.appspot.com \nVersion: 1.23, development version\nlicense: MIT/X-Windows')
+        mBox.showinfo('About DataSciCalc_oldest', 'A Data Science Calculator\n\n (c) David A York, 2018\n http:crunches-data.appspot.com \nVersion: 0.2, development version 0.125 \nlicense: MIT/X-Windows')
 
     # catch trying to cast a blank to a number
     def castError(self):
@@ -117,7 +118,7 @@ class calcGUI():
         mBox.showerror(title= "Ooops!!!", message="Improper Operand, did you try to take a log of a negative or to divide by zero, etc.")
     
     def arithmeticError(self):
-        mBox.showerror(title= "Ooops!!!", message="you need to enter value before selecting an operation")
+        mBox.showerror(title= "Ooops!!!", message="you need to enter a value before selecting an operation")
         
     def underConstruction(self):
         mBox.showinfo(title= "Men at Work!!", message="This function has not been implemented yet, \nsorrrrrrry - see next version :)")
@@ -166,14 +167,15 @@ class calcGUI():
         self.inKeys = ttk.LabelFrame(tab1, text=' Number Keys ')
         self.inKeys.grid(column=0, row=10, padx=8, pady=4)
         
-        self.functKeys = ttk.LabelFrame(tab1, text=' Function Keys ')
-        self.functKeys.grid(column=0, row=18, padx=8, pady=8)
-        
- 
         # Adding a Entry widget for x input
-        ttk.Label(self.display, text="  x ").grid(column=0, row=0, padx=4, pady=4,sticky='W')
+        ttk.Label(self.display, text="  x (ANS)").grid(column=0, row=0, padx=4, pady=4,sticky='W')
         self.inxStr = ttk.Entry(self.display, width=68, text='x')
         self.inxStr.grid(column=1, row=0, padx=4, pady=4,sticky='W')
+        
+        # Show gurrent y value as Label
+        ttk.Label(self.display, text="  y   = ").grid(column=0, row=1, padx=4, pady=4,sticky='W')
+        self.yValStr = ttk.Label(self.display, width=68, text=str(self.y))
+        self.yValStr.grid(column=1, row=1, padx=4, pady=4,sticky='W')
           
         # Scrolling input field for L or y entry ( L is list of sequence entered, y is single number entered:
         # Using a scrolled Text control for List entry
@@ -194,6 +196,9 @@ class calcGUI():
         
         self.action_toxVar = ttk.Button(self.inputAction, text="ENTER x", command=lambda: af.do_enterx(self))
         self.action_toxVar.grid(column=3, row=0, padx=4, pady=6)
+        
+        self.action_toxVar = ttk.Button(self.inputAction, text="APPEND x", command=lambda: af.do_appendx(self))
+        self.action_toxVar.grid(column=4, row=0, padx=4, pady=6)
 
         # Populate inKeys frame with the digit input keys (buttons)
         # Adding digit entry buttons 1 to 3
@@ -244,88 +249,156 @@ class calcGUI():
         self.action_comma.grid(column=2, row=7, padx=4, pady=2)
         
 
-     
-        #Populate function keys frame
-        self.action_add = ttk.Button(self.functKeys, text=" L + x ", command=lambda: af.do_add(self))
-        self.action_add.grid(column=0, row=0, padx=4, pady=6)
+        # =====================================================================
+        # Populate function keys frame 
+        # =====================================================================
+        
+        # for x,y functions ===================================================
+        if not Lflag:
+            self.xyFunctKeys = ttk.LabelFrame(tab1, text=' x,y Function Keys ')
+            self.xyFunctKeys.grid(column=0, row=18, padx=8, pady=8)
+            
+            self.action_add = ttk.Button(self.xyFunctKeys, text=" y + x ", command=lambda: af.do_add(self))
+            self.action_add.grid(column=0, row=0, padx=4, pady=6)
+    
+            self.action_subt = ttk.Button(self.xyFunctKeys, text=" y - x ", command=lambda: af.do_subt(self))
+            self.action_subt.grid(column=1, row=0, padx=4, pady=6)
+            
+            self.action_mult = ttk.Button(self.xyFunctKeys, text=" y * x ", command=lambda: af.do_mult(self))
+            self.action_mult.grid(column=2, row=0, padx=4, pady=6)
+            
+            self.action_div = ttk.Button(self.xyFunctKeys, text=" y / x ", command=lambda: af.do_div(self))
+            self.action_div.grid(column=3, row=0, padx=4, pady=6)
+            
+            self.action_div = ttk.Button(self.xyFunctKeys, text=" y <> x ", command=lambda: af.do_switchxy(self))
+            self.action_div.grid(column=0, row=1, padx=4, pady=6)
+                        
+            self.action_sgn = ttk.Button(self.xyFunctKeys, text="+/-", command=lambda: af.do_sgn(self))
+            self.action_sgn.grid(column=1, row=1, padx=4, pady=6)
+            
+            self.action_inverse = ttk.Button(self.xyFunctKeys, text=" 1/x ", command=lambda: af.do_invert(self))
+            self.action_inverse.grid(column=2, row=1, padx=4, pady=6)
+            
+            self.action_power2 = ttk.Button(self.xyFunctKeys, text=" x^2 ", command=lambda: af.do_power2(self))
+            self.action_power2.grid(column=3, row=1, padx=4, pady=6)
 
-        self.action_subt = ttk.Button(self.functKeys, text=" L - x ", command=lambda: af.do_subt(self))
-        self.action_subt.grid(column=1, row=0, padx=4, pady=6)
+            self.action_xpowy = ttk.Button(self.xyFunctKeys, text=" x**y ", command=lambda: af.do_xpowy(self))
+            self.action_xpowy.grid(column=0, row=2, padx=4, pady=6)
+    
+            self.action_sqrt = ttk.Button(self.xyFunctKeys, text=" sqrt x", command=lambda: af.do_sqrt(self))
+            self.action_sqrt.grid(column=1, row=2, padx=4, pady=6)
+            
+            self.action_cos = ttk.Button(self.xyFunctKeys, text="cos x", command=lambda: af.do_cos(self))
+            self.action_cos.grid(column=2, row=2, padx=4, pady=6)
+            
+            self.action_sin = ttk.Button(self.xyFunctKeys, text="sin s", command=lambda: af.do_sin(self))
+            self.action_sin.grid(column=3, row=2, padx=4, pady=6)
+            
+            self.action_tan = ttk.Button(self.xyFunctKeys, text="tan x", command=lambda: af.do_tan(self))
+            self.action_tan.grid(column=0, row=3, padx=4, pady=6)
+            
+            self.action_acos = ttk.Button(self.xyFunctKeys, text="acos x", command=lambda: af.do_acos(self))
+            self.action_acos.grid(column=1, row=3, padx=4, pady=6)
+            
+            self.action_asin = ttk.Button(self.xyFunctKeys, text="asin x", command=lambda: af.do_asin(self))
+            self.action_asin.grid(column=2, row=3, padx=4, pady=6)
+            
+            self.action_atan = ttk.Button(self.xyFunctKeys, text="atan x", command=lambda: af.do_atan(self))
+            self.action_atan.grid(column=3, row=3, padx=4, pady=6)
+            
+            self.action_log10 = ttk.Button(self.xyFunctKeys, text=" log10 x", command=lambda: af.do_log10(self))
+            self.action_log10.grid(column=0, row=4, padx=4, pady=6)
+            
+            self.action_ln = ttk.Button(self.xyFunctKeys, text=" ln x ", command=lambda: af.do_ln(self))
+            self.action_ln.grid(column=1, row=4, padx=4, pady=6)
+            
+            self.action_exp = ttk.Button(self.xyFunctKeys, text="exp(x)", command=lambda: af.do_exp(self))
+            self.action_exp.grid(column=2, row=4, padx=4, pady=6)
+            
+            self.action_deg2rad = ttk.Button(self.xyFunctKeys, text="deg>rad", command=lambda: af.do_deg2rad(self))
+            self.action_deg2rad.grid(column=3, row=4, padx=4, pady=6)
+            
+        # List functions stitched on and x,y switched off 
+        else:
+            self.listFunctKeys = ttk.LabelFrame(tab1, text='List Function Keys ')
+            self.listFunctKeys.grid(column=0, row=18, padx=8, pady=8)   
+               
+            self.action_add = ttk.Button(self.listFunctKeys, text=" L + x ", command=lambda: af.do_add(self))
+            self.action_add.grid(column=0, row=0, padx=4, pady=6)
+    
+            self.action_subt = ttk.Button(self.listFunctKeys, text=" L - x ", command=lambda: af.do_subt(self))
+            self.action_subt.grid(column=1, row=0, padx=4, pady=6)
+            
+            self.action_mult = ttk.Button(self.listFunctKeys, text=" L * x ", command=lambda: af.do_mult(self))
+            self.action_mult.grid(column=2, row=0, padx=4, pady=6)
+            
+            self.action_div = ttk.Button(self.listFunctKeys, text=" L / x ", command=lambda: af.do_div(self))
+            self.action_div.grid(column=3, row=0, padx=4, pady=6)
+            
+            self.action_sumL = ttk.Button(self.listFunctKeys, text=" sum L ", command=lambda: af.do_xpowy(self))
+            self.action_sumL.grid(column=0, row=1, padx=4, pady=6)
+    
+            self.action_prodL = ttk.Button(self.listFunctKeys, text=" prod L ", command=lambda: af.do_sqrt(self))
+            self.action_prodL.grid(column=1, row=1, padx=4, pady=6)
+            
+            self.action_inverseL = ttk.Button(self.listFunctKeys, text=" 1/L ", command=lambda: af.do_invert(self))
+            self.action_inverseL.grid(column=2, row=1, padx=4, pady=6)
+            
+            self.action_Lpowerx = ttk.Button(self.listFunctKeys, text=" L^2 ", command=lambda: af.do_power2(self))
+            self.action_Lpowerx.grid(column=3, row=1, padx=4, pady=6)
+            
+            self.action_sin = ttk.Button(self.listFunctKeys, text="sin(L)", command=lambda: af.do_sin(self))
+            self.action_sin.grid(column=0, row=2, padx=4, pady=6)
+            
+            self.action_cos = ttk.Button(self.listFunctKeys, text="cos(L)", command=lambda: af.do_cos(self))
+            self.action_cos.grid(column=1, row=2, padx=4, pady=6)
+            
+            self.action_tan = ttk.Button(self.listFunctKeys, text="tan(L)", command=lambda: af.do_tan(self))
+            self.action_tan.grid(column=2, row=2, padx=4, pady=6)
+            
+            self.action_acos = ttk.Button(self.listFunctKeys, text="acos(L)", command=lambda: af.do_acos(self))
+            self.action_acos.grid(column=3, row=2, padx=4, pady=6)
+            
+            self.action_asin = ttk.Button(self.listFunctKeys, text="asin(l)", command=lambda: af.do_asin(self))
+            self.action_asin.grid(column=0, row=3, padx=4, pady=6)
+            
+            self.action_atan = ttk.Button(self.listFunctKeys, text="atan(L)", command=lambda: af.do_atan(self))
+            self.action_atan.grid(column=1, row=3, padx=4, pady=6)
+            
+            self.action_log10L = ttk.Button(self.listFunctKeys, text=" log10 L", command=lambda: af.do_log10(self))
+            self.action_log10L.grid(column=2, row=3, padx=4, pady=6)
+            
+            self.action_10powL = ttk.Button(self.listFunctKeys, text=" 10^L", command=lambda: af.do_log10(self))
+            self.action_10powL.grid(column=3, row=3, padx=4, pady=6)
+            
+            self.action_lnL = ttk.Button(self.listFunctKeys, text=" ln L ", command=lambda: af.do_ln(self))
+            self.action_lnL.grid(column=0, row=4, padx=4, pady=6)
+            
+            self.action_expL = ttk.Button(self.listFunctKeys, text="exp(L)", command=lambda: af.do_exp(self))
+            self.action_expL.grid(column=1, row=4, padx=4, pady=6)
+            
+            self.action_xroot = ttk.Button(self.listFunctKeys, text="L^1/x", command=lambda: af.do_exp(self))
+            self.action_xroot.grid(column=2, row=4, padx=4, pady=6)
+            
+            self.action_Lpowx = ttk.Button(self.listFunctKeys, text="L^x", command=lambda: af.do_exp(self))
+            self.action_Lpowx.grid(column=3, row=4, padx=4, pady=6)
+            
+            self.action_xchL = ttk.Button(self.listFunctKeys, text="x <> L", command=lambda: af.do_blank(self))
+            self.action_xchL.grid(column=0, row=5, padx=4, pady=6)
+            
+            self.action_deg2rad = ttk.Button(self.listFunctKeys, text="deg>rad", command=lambda: af.do_deg2rad(self))
+            self.action_deg2rad.grid(column=1, row=5, padx=4, pady=6)
+            
+            self.action_sgn = ttk.Button(self.listFunctKeys, text=" +/- ", command=lambda: af.do_sgn(self))
+            self.action_sgn.grid(column=2, row=5, padx=4, pady=6)
+            
+            self.action_blank = ttk.Button(self.listFunctKeys, text="  ", command=lambda: af.do_blank(self))
+            self.action_blank.grid(column=3, row=5, padx=4, pady=6)
         
-        self.action_mult = ttk.Button(self.functKeys, text=" L * x ", command=lambda: af.do_mult(self))
-        self.action_mult.grid(column=2, row=0, padx=4, pady=6)
+            
+            
         
-        self.action_div = ttk.Button(self.functKeys, text=" L / x ", command=lambda: af.do_div(self))
-        self.action_div.grid(column=3, row=0, padx=4, pady=6)
-        
-        self.action_sumL = ttk.Button(self.functKeys, text=" sum L ", command=lambda: af.do_xpowy(self))
-        self.action_sumL.grid(column=0, row=1, padx=4, pady=6)
-
-        self.action_prodL = ttk.Button(self.functKeys, text=" prod L ", command=lambda: af.do_sqrt(self))
-        self.action_prodL.grid(column=1, row=1, padx=4, pady=6)
-        
-        self.action_inverseL = ttk.Button(self.functKeys, text=" 1/L ", command=lambda: af.do_invert(self))
-        self.action_inverseL.grid(column=2, row=1, padx=4, pady=6)
-        
-        self.action_Lpowerx = ttk.Button(self.functKeys, text=" L^2 ", command=lambda: af.do_power2(self))
-        self.action_Lpowerx.grid(column=3, row=1, padx=4, pady=6)
-        
-        self.action_sin = ttk.Button(self.functKeys, text="sin", command=lambda: af.do_sin(self))
-        self.action_sin.grid(column=0, row=2, padx=4, pady=6)
-        
-        self.action_cos = ttk.Button(self.functKeys, text="cos", command=lambda: af.do_cos(self))
-        self.action_cos.grid(column=1, row=2, padx=4, pady=6)
-        
-        self.action_tan = ttk.Button(self.functKeys, text="tan", command=lambda: af.do_tan(self))
-        self.action_tan.grid(column=2, row=2, padx=4, pady=6)
-        
-        self.action_acos = ttk.Button(self.functKeys, text="acos", command=lambda: af.do_acos(self))
-        self.action_acos.grid(column=3, row=2, padx=4, pady=6)
-        
-        self.action_asin = ttk.Button(self.functKeys, text="asin", command=lambda: af.do_asin(self))
-        self.action_asin.grid(column=0, row=3, padx=4, pady=6)
-        
-        self.action_atan = ttk.Button(self.functKeys, text="atan", command=lambda: af.do_atan(self))
-        self.action_atan.grid(column=1, row=3, padx=4, pady=6)
-        
-        self.action_log10L = ttk.Button(self.functKeys, text=" log10 L", command=lambda: af.do_log10(self))
-        self.action_log10L.grid(column=2, row=3, padx=4, pady=6)
-        
-        self.action_10powL = ttk.Button(self.functKeys, text=" 10^L", command=lambda: af.do_log10(self))
-        self.action_10powL.grid(column=3, row=3, padx=4, pady=6)
-        
-        self.action_lnL = ttk.Button(self.functKeys, text=" ln L ", command=lambda: af.do_ln(self))
-        self.action_lnL.grid(column=0, row=4, padx=4, pady=6)
-        
-        self.action_expL = ttk.Button(self.functKeys, text="exp(L)", command=lambda: af.do_exp(self))
-        self.action_expL.grid(column=1, row=4, padx=4, pady=6)
-        
-        self.action_xroot = ttk.Button(self.functKeys, text="L^1/x", command=lambda: af.do_exp(self))
-        self.action_xroot.grid(column=2, row=4, padx=4, pady=6)
-        
-        self.action_Lpowx = ttk.Button(self.functKeys, text="L^x", command=lambda: af.do_exp(self))
-        self.action_Lpowx.grid(column=3, row=4, padx=4, pady=6)
-        
-        self.action_xchL = ttk.Button(self.functKeys, text="x <> L", command=lambda: af.do_exp(self))
-        self.action_xchL.grid(column=0, row=5, padx=4, pady=6)
-        
-        self.action_deg2rad = ttk.Button(self.functKeys, text="deg>rad", command=lambda: af.do_deg2rad(self))
-        self.action_deg2rad.grid(column=1, row=5, padx=4, pady=6)
-        
-        self.action_sgn = ttk.Button(self.functKeys, text=" +/- ", command=lambda: af.do_sgn(self))
-        self.action_sgn.grid(column=2, row=5, padx=4, pady=6)
-        
-        self.action_blank = ttk.Button(self.functKeys, text="  ", command=lambda: af.do_blank(self))
-        self.action_blank.grid(column=3, row=5, padx=4, pady=6)
-        
-        #=======================================================================
-        # self.action_unasgn = ttk.Button(self.functKeys, text="unasgn", command=lambda: af.do_blank(self))
-        # self.action_unasgn.grid(column=4, row=2, padx=4, pady=6)
-        #=======================================================================
-        
-
-        
-        # We are creating a container frame to hold tab2 widgets ============================
+        # Creating a container frame to hold tab2 widgets ============================
         self.notes = ttk.LabelFrame(tab2, text=' Notes ')
         self.notes.grid(column=0, row=0, padx=8, pady=4, sticky='W')
         
@@ -405,8 +478,27 @@ class calcGUI():
         # Creating a container frame to hold tab4 widgets
         self.statistics = ttk.LabelFrame(tab4, text=' A Statistical Applications Interface ')
         self.statistics.grid(column=0, row=3, padx=8, pady=4, sticky='W')
-        ttk.Label(self.statistics, text="Statistics:  this application functionality has not yet been implemented ........        ").grid(column=0, row=5, sticky='W')
+        self.statsctl = ttk.LabelFrame(self.statistics, text='Dataset')
+        self.statsctl.grid(column=0, row=0, padx=8, pady=4, sticky='W')
           
+        self.get_Dataset = ttk.Button(self.statsctl, text="Select", command=lambda: af.do_blank(self))
+        self.get_Dataset.grid(column=0, row=0, padx=4, pady=4)
+
+        self.prt_Dataset = ttk.Button(self.statsctl, text=" Print ", command=lambda: af.do_blank(self))
+        self.prt_Dataset.grid(column=1, row=0, padx=4, pady=4)
+        
+        self.grph_Dataset = ttk.Button(self.statsctl, text="  Graph  ", command=lambda: af.do_blank(self))
+        self.grph_Dataset.grid(column=2, row=0, padx=4, pady=4)
+        
+        self.save_Dataset = ttk.Button(self.statsctl, text="Save", command=lambda: af.do_blank(self))
+        self.save_Dataset.grid(column=3, row=0, padx=4, pady=6)
+        
+        self.funct_Dataset = ttk.Button(self.statsctl, text="Analyze", command=lambda: af.do_blank(self))
+        self.funct_Dataset.grid(column=4, row=0, padx=4, pady=6)
+        
+        ttk.Label(self.statistics, text="    Statistics:  this application functionality has not yet been implemented ..........        ", foreground='red').grid(column=0, row=35, sticky='W')
+       
+        
         
         # Creating a container frame to hold tab5 graphing widgets 
         self.graphical = ttk.LabelFrame(tab5, text=' Graphical Output ')
@@ -414,8 +506,22 @@ class calcGUI():
          
         # Adding a graphic window (canvas widget)
         gw = Canvas(self.graphical, width=415, height=550)
-        gw.create_text(60,10, text="Not yet implemented")
+               
+        gw.create_rectangle(20, 20, 300, 200, fill="blue") 
+        gw.create_line(20, 190, 290, 20, fill="red", dash=(4, 4))
+        gw.create_text(160,10, fill='green', font='Calabri',  text="A Nice Fudged Graph")
+        gw.create_text(155,120, fill='white', text="Graphics NOT yet implemented")
+        gw.create_text(5,100,text="Y")
+        gw.create_text(165,206,  text="X")
+        #=======================================================================
+        # img = ImageTk.PhotoImage(file='D:/git/DataSciCalc/images/DNA-tree-crop2-alpha.gif')
+        #=======================================================================
+        #=======================================================================
+        # gw.create_image(55,130,image=img)
+        #=======================================================================
         gw.grid(column=0, row=1, padx=8, pady=4, sticky='W')
+               
+
                
         
         # Creating a Menu Bar ---------------------------------------------------------------------
@@ -434,9 +540,23 @@ class calcGUI():
         editMenu.add_command(label="Cut")
         editMenu.add_command(label="Copy")
         editMenu.add_command(label="Paste")
+        editMenu.add_command(label="Delete")
+        editMenu.add_command(label="Clear All")
+        editMenu.add_command(label="Select")
         editMenu.add_separator()
+        editMenu.add_command(label="Enter")
         editMenu.add_command(label="Options")
         menuBar.add_cascade(label="Edit", menu=editMenu)
+        
+        # Add an Edit Menu
+        toolsMenu = Menu(menuBar, tearoff=0)
+        toolsMenu.add_command(label="Math")
+        toolsMenu.add_command(label="Descriptive")
+        toolsMenu.add_command(label="Inference")
+        toolsMenu.add_separator()
+        toolsMenu.add_command(label="Models")
+        toolsMenu.add_command(label="Plots")
+        menuBar.add_cascade(label="Data Tools", menu=toolsMenu)
 
         # Add another Menu to the Menu Bar and an item
         helpMenu = Menu(menuBar, tearoff=0)

@@ -4,7 +4,6 @@ Created on Sep 8, 2018
 @author: david
 '''
 import tkinter as tk
-from DataSciCalc import calcGUI
 from os import path, makedirs
 import time
 from datetime import datetime
@@ -35,17 +34,14 @@ class ActionFunctions():
     ''' Register and variable cleanup functions '''
     def do_clrx(self):
         # clear the entry in the current input register
-        self.x = 0.0
-        inxRegStr = ''
+        self.inxRegStr = ''
         self.inxStr.delete(0,tk.END)
         self.inxStr.insert(tk.INSERT, self.inxRegStr)
         print('cleared x register')
         
     def do_clrL(self):
         # clear the entry in the current input register
-        self.L = 0.0
-        self.y = 0.0
-        inLRegStr = ''
+        self.inLRegStr = ''
         self.inLStr.delete(1.0,tk.END)
         self.inLStr.insert(tk.INSERT, self.inLRegStr)
         print('cleared List register')
@@ -67,6 +63,67 @@ class ActionFunctions():
         print('current Register: ' + self.inxRegStr)
         print('current Variable: ' + str(self.x))
         print('Operand 2 Variable: ' + str(self.y))
+    
+    def do_enterx(self):
+        self.y = self.x
+        self.yValStr['text'] = str(self.y)
+        try:
+            self.inxRegStr = self.inxStr.get()
+            self.x = float(self.inxStr.get())
+        except:
+            self.castError()
+            print("the x input can't be blank, a '0' is at least needed")
+        ActionFunctions.do_clrx(self)
+        # log action to history 
+        #=======================================================================
+        # self.history.insert(tk.END, 'x ENTERED  ' + str(self.x) + '\n')
+        # self.history.see(tk.END)
+        #=======================================================================
+        self.xFlag = True
+        self.inxStr.focus()
+        print('current Register: ' + self.inxRegStr)
+        print('current Variable: ' + str(self.x))
+        print("Entered x register into x variable and clear x register")
+        print('y Variable: ' + str(self.y))
+        
+    def do_enterL(self):
+        self.y = self.x
+        try:
+            self.L=float(self.inLReg.get())
+        except:
+            self.castError()
+            print("the input can't be blank, a '0' is atleast needed")
+        ActionFunctions.do_clrL(self)
+        # log action to history 
+        self.history.insert(tk.END, 'ENTERED  ' + str(self.L) + '\n')
+        self.history.see(tk.END)
+        self.LFlag = True
+        self.inxStr.focus()
+        print('x Register: ' + self.inxRegStr)
+        print('x Variable: ' + str(self.x))
+        print("Entered x register into current variable and clear current register")
+        print('Operand 2 Variable: ' + str(self.y))
+        
+    def do_appendx(self):
+        self.y = self.x
+        try:
+            self.inxRegStr = self.inxStr.get()
+            self.x = float(self.inxStr.get())
+        except:
+            self.castError()
+            print("the x input can't be blank, a '0' is at least needed")
+        ActionFunctions.do_clrx(self)
+        # log action to history 
+        #=======================================================================
+        # self.history.insert(tk.END, 'x ENTERED  ' + str(self.x) + '\n')
+        # self.history.see(tk.END)
+        #=======================================================================
+        self.xFlag = True
+        self.inxStr.focus()
+        print('current Register: ' + self.inxRegStr)
+        print('current Variable: ' + str(self.x))
+        print("Appemded x register onto L variable and clear x register")
+        print('y Variable: ' + str(self.y))
     
     def do_clrHistory(self):
         # clear the calculation history
@@ -203,7 +260,9 @@ class ActionFunctions():
         self.inxStr.insert(tk.INSERT, str(self.resVar))
         self.history.insert(tk.END, 'SUM  ' + str(self.resVar) + '\n')
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
         print("adding")
         print("sum is {}".format(self.resVar))
         
@@ -221,7 +280,9 @@ class ActionFunctions():
         self.inxStr.insert(tk.INSERT, str(self.resVar))
         self.history.insert(tk.END, 'DIFF  ' + str(self.resVar) + '\n')
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("subtracting")
         print("difference is {}".format(self.resVar))
@@ -241,7 +302,9 @@ class ActionFunctions():
         self.inxStr.insert(tk.INSERT, str(self.resVar))
         self.history.insert(tk.END, 'PROD  ' + str(self.resVar) + '\n')
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
         print("multiplying")
         print("product is {}".format(self.resVar))
         
@@ -264,50 +327,23 @@ class ActionFunctions():
         self.inxStr.insert(tk.INSERT, str(self.resVar))
         self.history.insert(tk.END, 'DIVD  ' + str(self.resVar) + '\n')
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("dividing")
         print("dividend is {}".format(self.resVar))
-        
-    def do_enterx(self):
+    
+    def do_switchxy(self):
+        temp = self.y
         self.y = self.x
-        try:
-            self.inxRegStr = self.inxStr.get()
-            self.x = float(self.inxStr.get())
-        except:
-            self.castError()
-            print("the x input can't be blank, a '0' is at least needed")
-        ActionFunctions.do_clrx(self)
-        # log action to history 
-        #=======================================================================
-        # self.history.insert(tk.END, 'x ENTERED  ' + str(self.x) + '\n')
-        # self.history.see(tk.END)
-        #=======================================================================
-        self.xFlag = True
-        self.inxStr.focus()
-        print('current Register: ' + self.inxRegStr)
-        print('current Variable: ' + str(self.x))
-        print("Entered x register into x variable and clear x register")
-        print('y Variable: ' + str(self.y))
+        self.x = temp
+        self.yValStr['text'] = str(self.y)
+        self.inxStr.delete(0,tk.END)
+        self.inxStr.insert(tk.INSERT, str(self.x))
         
-    def do_enterL(self):
-        self.y = self.x
-        try:
-            self.L=float(self.inLReg.get())
-        except:
-            self.castError()
-            print("the input can't be blank, a '0' is atleast needed")
-        ActionFunctions.do_clrL(self)
-        # log action to history 
-        self.history.insert(tk.END, 'ENTERED  ' + str(self.L) + '\n')
-        self.history.see(tk.END)
-        self.LFlag = True
-        self.inxStr.focus()
-        print('x Register: ' + self.inxRegStr)
-        print('x Variable: ' + str(self.x))
-        print("Entered x register into current variable and clear current register")
-        print('Operand 2 Variable: ' + str(self.y))
-        
+        print ('switch x and y')
+        print ('x = {}, y = {}'.format(self.x, self.y))
     def do_xpowy(self):
         # check for entered button
         if not self.xFlag:
@@ -319,7 +355,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'x^y  ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         # do something else to (x)
         print('x^y')
@@ -341,7 +379,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'SQRT  ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("square of x is {}".format(self.resVar))
         print('sqrt')
@@ -362,7 +402,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'INVERSE  ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("inverse of x is {}".format(self.resVar))
         print('inverse')
@@ -386,7 +428,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'POWER2  ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("square of x is {}".format(self.resVar))
         print('sqrt')
@@ -395,7 +439,7 @@ class ActionFunctions():
     def do_sgn(self):
         # check for entered button
         if not self.xFlag:
-            ActionFunctions.do_enterReg(self)
+            ActionFunctions.do_enterx(self)
         # do change of sign too (x)
         self.x = self.x * -1
         # log action to history 
@@ -425,7 +469,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'COS ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("cosine of x is {}".format(self.resVar))
         print('cosine')
@@ -446,7 +492,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'SIN ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print(" sine of x is {}".format(self.resVar))
         print('sine')
@@ -467,7 +515,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'TAN  ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("tangent of x is {}".format(self.resVar))
         print('tangent')
@@ -488,7 +538,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'COS ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("cosine of x is {}".format(self.resVar))
         print('cosine')
@@ -509,7 +561,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'SIN ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print(" sine of x is {}".format(self.resVar))
         print('sine')
@@ -530,10 +584,13 @@ class ActionFunctions():
         self.history.insert(tk.END, 'TAN  ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("tangent of x is {}".format(self.resVar))
         print('tangent')
+        
     def do_log10(self):
         # check for entered button
         if not self.xFlag:
@@ -553,7 +610,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'LOG10  ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("log10 of x is {}".format(self.resVar))
         print('LOG')
@@ -578,7 +637,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'LN  ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("ln of x is {}".format(self.resVar))
         print('ln')
@@ -615,7 +676,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'EXP  ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("exp of x is {}".format(self.resVar))
         print('exp()')
@@ -668,7 +731,9 @@ class ActionFunctions():
         self.history.insert(tk.END, 'DEG2RAD  ' + str(self.resVar) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        ActionFunctions.do_enterReg(self)
+        self.x = self.resVar
+        self.xFlag = True
+        self.inxStr.focus()
 
         print("Deg to Radians of x is {}".format(self.resVar))
         print('DEG2RAD')
@@ -682,6 +747,7 @@ class ActionFunctions():
         self.history.see(tk.END)
         # do something else to (x)
         print('unused key')
+        
         
     def do_note(self):
         # check for entered button

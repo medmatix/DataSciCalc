@@ -1,21 +1,2 @@
-Output of Read function is 
-Hello 
-This is Delhi 
-This is Paris 
-This is London 
 
-
-Output of Readline function is 
-Hello 
-
-
-Output of Read(9) function is 
-Hello 
-Th
-
-Output of Readline(9) function is 
-Hello 
-
-Output of Readlines function is 
-['Hello \n', 'This is Delhi \n', 'This is Paris \n', 'This is London \n']
 
