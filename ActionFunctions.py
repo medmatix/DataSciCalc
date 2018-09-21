@@ -1,7 +1,12 @@
 '''
+Module: Function Key action methods for DataSciCalc Calculator
 Created on Sep 8, 2018
+updated Sep 21, 2018 13:46PM
 
-@author: david
+@version: DSC0.019
+@license: MIT
+@author: David York
+@copyright: 2018 David A York
 '''
 import tkinter as tk
 from os import path, makedirs
@@ -857,31 +862,7 @@ class ActionFunctions():
         
         print ('not implemented due to  datatype issues')
         
-    def do_Lpowy(self):
-        # check for entered button
-        if not self.xFlag:
-            self.arithmeticError()
-            return
-        if not self.Lflag:
-            self.arithmeticError()
-            return
-        # add variables entered together
-        newL =  [i^self.x for i in self.L]
-        self.L = newL
-        # log action to history 
-        self.history.see(tk.END)
-        # clear register before transferring result there
-        if (len(self.inLStr.get(1.0,tk.END))) > 0:
-            self.inLStr.delete(1.0,tk.END)
-            print("cleared")
-        self.inLStr.insert(tk.INSERT, str(self.L))
-        self.history.insert(tk.END, 'L toPOWER x  ' + str(self.L) + '\n')
-        # set up for chain operation
-        self.x = 0
-        self.xFlag = True
-        self.inxStr.focus()
-        print("LtoPOWERx")
-        print("result list is {}".format(self.L))
+    
 
         # do something else to (x)
         print('x^y')
@@ -938,44 +919,45 @@ class ActionFunctions():
         
     def do_sqrtL(self):
         # check for entered button
-        if not self.xFlag:
+        if not self.Lflag:
             self.arithmeticError()
             return
-        # calculate sqrt(x)
-        self.resVar = mt.sqrt(self.x)
-                # log action to history 
-        
+        # add variables entered together
+        newL =  [mt.sqrt(i) for i in self.L]
+        self.L = newL
+        # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'SQRT  ' + str(self.resVar) + '\n')
-        self.history.see(tk.END)
+        if (len(self.inLStr.get(1.0,tk.END))) > 0:
+            self.inLStr.delete(1.0,tk.END)
+            print("cleared")
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'L squared' + str(self.L) + '\n')
         # set up for chain operation
-        self.x = self.resVar
+        self.x = 0
         self.xFlag = True
         self.inxStr.focus()
+        print("L squared")
+        print("L squared is {}".format(self.L))
 
-        print("square of x is {}".format(self.resVar))
-        print('sqrt')
         
     def do_invertL(self):
         # check for entered button
-        if not self.xFlag:
+        if not self.Lflag:
             self.arithmeticError()
             return
-        # calculate square of (x)
-        self.resVar = 1/self.x
+        # add variables entered together
+        newL =  [1/i for i in self.L]
+        self.L = newL
+
         # log action to history 
-        
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'INVERSE  ' + str(self.resVar) + '\n')
+        self.inLStr.delete(1.0,tk.END)
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'INVERSE of L' + str(self.L) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        self.x = self.resVar
         self.xFlag = True
         self.inxStr.focus()
 
@@ -984,284 +966,364 @@ class ActionFunctions():
         print('inverse of x')
         # calculate inverse (x)
         print('inverted x')
-    
-    def do_Lpower2(self):
+        
+            # do something else to (x)
+        print('x^y')
+        print("y power of x is {}".format(self.resVar))
+        
+    def do_Lpowx(self):
         # check for entered button
         if not self.xFlag:
             self.arithmeticError()
             return
-        # calculate square of (x)
-        self.resVar = self.x**2
-                # log action to history 
-        
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        newL =  [i**self.x for i in self.L]
+        self.L = newL
+        # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'POWER2  ' + str(self.resVar) + '\n')
-        self.history.see(tk.END)
+        if (len(self.inLStr.get(1.0,tk.END))) > 0:
+            self.inLStr.delete(1.0,tk.END)
+            print("cleared")
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'L toPOWER x  ' + str(self.L) + '\n')
         # set up for chain operation
-        self.x = self.resVar
+        self.x = 0
         self.xFlag = True
         self.inxStr.focus()
+        print("L toPOWER x")
+        print("result list is {}".format(self.L))
+        
+        
+    def do_Lpower2(self):
+        # check for entered button
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        newL =  [i**2 for i in self.L]
+        self.L = newL
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inLStr.get(1.0,tk.END))) > 0:
+            self.inLStr.delete(1.0,tk.END)
+            print("cleared")
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'L squared' + str(self.L) + '\n')
+        # set up for chain operation
+        self.x = 0
+        self.xFlag = True
+        self.inxStr.focus()
+        print("L squared")
+        print("L squared is {}".format(self.L))
 
-        print("square of x is {}".format(self.resVar))
-        print('sqrt')
-        print('squared x')
     
     def do_sgnL(self):
         # check for entered button
-        if not self.xFlag:
-            ActionFunctions.do_enterx(self)
+        if not self.Lflag:
+            self.arithmeticError()
+            return
         # do change of sign too (x)
-        self.x = self.x * -1
+        self.L = [i*(-1) for i in self.L]
         # log action to history 
         
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.x))
-        self.history.insert(tk.END, ' +/- ' + str(self.x) + '\n')
+        self.inLStr.delete(1.0,tk.END)
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, ' +/- ' + str(self.L) + '\n')
         self.history.see(tk.END)
-        print("sign changed, x is now {}".format(self.x))
-        print('change of sign')
+        print("sign changed, L is now {}".format(self.L))
+        print('change of sign all L')
     
     def do_cosL(self):
         # check for entered button
-        if not self.xFlag:
+        if not self.Lflag:
             self.arithmeticError()
             return
-        # calculate cos(x) (x in radians!!!
-        self.resVar = mt.cos(self.x)
-                # log action to history 
-        
+        # add variables entered together
+        newL =  [mt.cos(i) for i in self.L]
+        self.L = newL
+
+        # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'COS ' + str(self.resVar) + '\n')
+        self.inLStr.delete(1.0,tk.END)
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'cosine of L' + str(self.L) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        self.x = self.resVar
         self.xFlag = True
         self.inxStr.focus()
 
-        print("cosine of x is {}".format(self.resVar))
+        print("cosine of L is {}".format(self.L))
         print('cosine')
         
     def do_sinL(self):
         # check for entered button
-        if not self.xFlag:
+        if not self.Lflag:
             self.arithmeticError()
             return
-        # calculate sqrt(x)
-        self.resVar = mt.sin(self.x)
-                # log action to history 
-        
+        # add variables entered together
+        newL =  [mt.sin(i) for i in self.L]
+        self.L = newL
+
+        # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'SIN ' + str(self.resVar) + '\n')
+        self.inLStr.delete(1.0,tk.END)
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'sine of L' + str(self.L) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        self.x = self.resVar
         self.xFlag = True
         self.inxStr.focus()
 
-        print(" sine of x is {}".format(self.resVar))
+        print("sine of L is {}".format(self.L))
         print('sine')
         
     def do_tanL(self):
         # check for entered button
-        if not self.xFlag:
+        if not self.Lflag:
             self.arithmeticError()
             return
-        # calculate tangent(x)
-        self.resVar = mt.tan(self.x)
-                # log action to history 
-        
+        # add variables entered together
+        newL =  [mt.tan(i) for i in self.L]
+        self.L = newL
+
+        # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'TAN  ' + str(self.resVar) + '\n')
+        self.inLStr.delete(1.0,tk.END)
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'tangent of L' + str(self.L) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        self.x = self.resVar
         self.xFlag = True
         self.inxStr.focus()
 
-        print("tangent of x is {}".format(self.resVar))
+        print("tangent of L is {}".format(self.L))
         print('tangent')
         
     def do_acosL(self):
         # check for entered button
-        if not self.xFlag:
+        if not self.Lflag:
             self.arithmeticError()
             return
-        # calculate cos(x) (x in radians!!!
-        self.resVar = mt.acos(self.x)
-                # log action to history 
-        
+        # add variables entered together
+        newL =  [mt.acos(i) for i in self.L]
+        self.L = newL
+
+        # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'COS ' + str(self.resVar) + '\n')
+        self.inLStr.delete(1.0,tk.END)
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'arcCosine of L' + str(self.L) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        self.x = self.resVar
         self.xFlag = True
         self.inxStr.focus()
 
-        print("cosine of x is {}".format(self.resVar))
-        print('cosine')
+        print("arcCosine of L is {}".format(self.L))
+        print('arcCosine')
         
     def do_asinL(self):
         # check for entered button
-        if not self.xFlag:
+        if not self.Lflag:
             self.arithmeticError()
             return
-        # calculate sqrt(x)
-        self.resVar = mt.asin(self.x)
-                # log action to history 
-        
+        # add variables entered together
+        newL =  [mt.asin(i) for i in self.L]
+        self.L = newL
+
+        # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'SIN ' + str(self.resVar) + '\n')
+        self.inLStr.delete(1.0,tk.END)
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'arcsine of L' + str(self.L) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        self.x = self.resVar
         self.xFlag = True
         self.inxStr.focus()
 
-        print(" sine of x is {}".format(self.resVar))
-        print('sine')
+        print("arcsine of L is {}".format(self.L))
+        print('arcsine')
         
     def do_atanL(self):
         # check for entered button
-        if not self.xFlag:
+        if not self.Lflag:
             self.arithmeticError()
             return
-        # calculate tangent(x)
-        self.resVar = mt.atan(self.x)
-                # log action to history 
-        
+        # add variables entered together
+        newL =  [mt.atan(i) for i in self.L]
+        self.L = newL
+
+        # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'TAN  ' + str(self.resVar) + '\n')
+        self.inLStr.delete(1.0,tk.END)
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'arctan of L' + str(self.L) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        self.x = self.resVar
         self.xFlag = True
         self.inxStr.focus()
 
-        print("tangent of x is {}".format(self.resVar))
-        print('tangent')
+        print("arctan of L is {}".format(self.L))
+        print('arctan')
         
     def do_log10L(self):
         # check for entered button
-        if not self.xFlag:
+        if not self.Lflag:
             self.arithmeticError()
             return
-        # calculate base 10 log(x)
-        try:
-            self.resVar = mt.log10(self.x)
-        except:
-            self.improperInputError()
-            return
+        # add variables entered together
+        newL =  [mt.log10(i) for i in self.L]
+        self.L = newL
+
         # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'LOG10  ' + str(self.resVar) + '\n')
+        self.inLStr.delete(1.0,tk.END)
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'log10 of L' + str(self.L) + '\n')
         self.history.see(tk.END)
         # set up for chain operation
-        self.x = self.resVar
         self.xFlag = True
         self.inxStr.focus()
 
-        print("log10 of x is {}".format(self.resVar))
-        print('LOG')
+        print("log10 of L is {}".format(self.L))
+        print('Log10')
+
+        
+    def do_10powL(self):
+        # check for entered button
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        newL =  [10**i for i in self.L]
+        self.L = newL
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inLStr.get(1.0,tk.END))) > 0:
+            self.inLStr.delete(1.0,tk.END)
+            print("cleared")
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, '10 toPOWER of all L  ' + str(self.L) + '\n')
+        # set up for chain operation
+        self.x = 0
+        self.xFlag = True
+        self.inxStr.focus()
+        print("10 toPOWER L")
+        print("10 to power of L is {}".format(self.L))
+
         
     def do_lnL(self):
         # check for entered button
-        if not self.xFlag:
+        if not self.Lflag:
             self.arithmeticError()
             return
-        # calculate natural log(x)
-        try:
-            self.resVar = mt.log(self.x)
-        except:
-            self.improperInputError()
-            return
-        
+        # add variables entered together
+        newL =  [mt.log(i) for i in self.L]
+        self.L = newL
         # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'LN  ' + str(self.resVar) + '\n')
-        self.history.see(tk.END)
+        if (len(self.inLStr.get(1.0,tk.END))) > 0:
+            self.inLStr.delete(1.0,tk.END)
+            print("cleared")
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'ln of all L  ' + str(self.L) + '\n')
         # set up for chain operation
-        self.x = self.resVar
+        self.x = 0
         self.xFlag = True
         self.inxStr.focus()
+        print("ln L")
+        print("ln L is {}".format(self.L))
 
-        print("ln of x is {}".format(self.resVar))
-        print('ln')
         
     def do_expL(self):
         # check for entered button
-        if not self.xFlag:
+        if not self.Lflag:
             self.arithmeticError()
             return
-        # calculate exp(x)
-        self.resVar = mt.exp(self.x)
-                # log action to history 
-        
+        # add variables entered together
+        newL =  [mt.exp(i) for i in self.L]
+        self.L = newL
+        # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'EXP  ' + str(self.resVar) + '\n')
-        self.history.see(tk.END)
+        if (len(self.inLStr.get(1.0,tk.END))) > 0:
+            self.inLStr.delete(1.0,tk.END)
+            print("cleared")
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'EXP L  ' + str(self.L) + '\n')
         # set up for chain operation
-        self.x = self.resVar
+        self.x = 0
         self.xFlag = True
         self.inxStr.focus()
-
-        print("exp of x is {}".format(self.resVar))
-        print('exp()')
+        print("EXP L")
+        print("exp of L is {}".format(self.L))
         
-    def do_Ldeg2Lrad(self):
+    def do_xrootL(self):
         # check for entered button
         if not self.xFlag:
             self.arithmeticError()
             return
-        # convert degrees in x to radians (x)
-        self.resVar = mt.radians(self.x)
-                # log action to history 
-        
+        # check for entered button
+        if not self.xFlag:
+            self.arithmeticError()
+            return
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        newL =  [(mt.exp(i)/self.x) for i in self.L]
+        self.L = newL
+        # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        self.inxStr.delete(0,tk.END)
-        self.inxStr.insert(tk.INSERT, str(self.resVar))
-        self.history.insert(tk.END, 'DEG2RAD  ' + str(self.resVar) + '\n')
-        self.history.see(tk.END)
+        if (len(self.inLStr.get(1.0,tk.END))) > 0:
+            self.inLStr.delete(1.0,tk.END)
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'xROOTL  ' + str(self.L) + '\n')
         # set up for chain operation
-        self.x = self.resVar
+        self.x = 0
         self.xFlag = True
         self.inxStr.focus()
-
-        print("Deg to Radians of x is {}".format(self.resVar))
+        print("x root L")
+        print("x root of L is {}".format(self.L))
+        
+    def do_Ldeg2Lrad(self):
+        # check for entered button
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        newL =  [mt.radians(i) for i in self.L]
+        self.L = newL
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inLStr.get(1.0,tk.END))) > 0:
+            self.inLStr.delete(1.0,tk.END)
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'DEG2RAD L  ' + str(self.L) + '\n')
+        # set up for chain operation
+        self.x = 0
+        self.xFlag = True
+        self.inxStr.focus()
         print('DEG2RAD')
+        print("Deg to Radians of L is {}".format(self.L))
+
         
     def do_blank(self):
         # check for entered button
