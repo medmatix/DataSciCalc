@@ -13,7 +13,11 @@ from os import path, makedirs
 import time
 from datetime import datetime
 import math as mt
+import statistics as st
 import numpy as np
+from scipy import stats
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
 from builtins import list
 
 
@@ -37,12 +41,18 @@ class ActionFunctions():
 
     # module variables and constants 
 
-    ''' Register and variable cleanup functions '''
+    # Register and variable cleanup functions ############################
+    '''
+    Key pad Implementation Functions and Methods
+    '''
+        
     def do_clrx(self):
         # clear the entry in the current input register
         self.inxRegStr = ''
         self.inxStr.delete(0,tk.END)
         self.inxStr.insert(tk.INSERT, self.inxRegStr)
+        self.history.insert(tk.END, 'CLEAR x Reg \n')
+        self.history.see(tk.END)
         print('cleared x register')
         
     def do_clrL(self):
@@ -50,6 +60,8 @@ class ActionFunctions():
         self.inLRegStr = ''
         self.inLStr.delete(1.0,tk.END)
         self.inLStr.insert(tk.INSERT, self.inLRegStr)
+        self.history.insert(tk.END, 'CLEAR L Reg \n')
+        self.history.see(tk.END)
         print('cleared List register')
 
     def do_clrAllRegr(self):
@@ -63,16 +75,15 @@ class ActionFunctions():
         self.z = 0.0
         self.L = [0]
         self.resVar = 0.0
+        self.Lflag = False
+        self.xFlag = False
         # log action to history 
-        self.history.insert(tk.END, 'CLEAR ALL  ' + str(self.resVar) + '\n')
+        self.history.insert(tk.END, 'CLEAR ALL \n')
         self.history.see(tk.END)
         self.inxStr.insert(tk.INSERT, self.inxRegStr)
         self.inLStr.insert(tk.INSERT, self.inLRegStr)
         print('cleared all registers and variables')
-        print('current Register: ' + self.inxRegStr)
-        print('current x Variable: ' + str(self.x))
-        print('current y Variable: ' + str(self.y))
-        print('current L list is: ' + str(self.L))
+
     
     def do_enterx(self):
         self.y = self.x
@@ -113,32 +124,26 @@ class ActionFunctions():
         self.xyFunctKeys.grid_forget()
         self.listFunctKeys.grid()
         self.inLStr.focus()
-        print('List flag is:{}'.format(self.Lflag))
-        print('L Register:{} '.format(self.inLRegStr))
-        print('L Variable:{} '.format(self.L))
-        print("Entered list register into List variable, L and cleared list register")
         print('list L is: ' + str(self.L))
-        ActionFunctions.do_clrL(self)
+
         
     def do_appendx(self):
         tmpL = self.L
         self.y = self.x
         self.yValStr['text'] = str(self.y)
-        #try:
-        self.inxRegStr = self.inxStr.get()
-        tmpxs = self.inxRegStr
-        print(tmpxs)
-        tmpxf = float(tmpxs)
-        print("x to l = {}".format(tmpxf))
-        tmpL.append(tmpxf)
-        print(tmpL)
-        print(self.L)
-        #=======================================================================
-        # except:
-        #     self.castError()
-        #     print("the x input can't be blank, a '0' is at least needed")
-        #=======================================================================
-        
+        try:
+            self.inxRegStr = self.inxStr.get()
+            tmpxs = self.inxRegStr
+            print(tmpxs)
+            tmpxf = float(tmpxs)
+            print("x to l = {}".format(tmpxf))
+            tmpL.append(tmpxf)
+            print(tmpL)
+            print(self.L)
+        except:
+            self.castError()
+            print("the x input can't be blank, a '0' is at least needed")
+            return
         self.inLStr.delete(1.0,tk.END)
         self.inLStr.insert(tk.INSERT, self.L.__str__())
         ActionFunctions.do_clrx(self)
@@ -152,20 +157,6 @@ class ActionFunctions():
         print("Entered x register into x variable and clear x register")
         print('y Variable: ' + str(self.y))
     
-    def do_clrHistory(self):
-        # clear the calculation history
-        self.history.delete(1.0,tk.END)
-        #self.history.insert(tk.END, 'CLEAR HISTORY\n')
-        self.history.see(tk.END)
-        print('cleared the calculation history')
-        
-    def do_prtHistory(self):
-        print("\n Calculation history:\n")
-        print(self.history.get(1.0, tk.END) + '\n')  # to Console
-        self.history.insert(tk.END, 'PRINT HISTORY\n')
-        self.history.see(tk.END)
-        self.historyToDialog()  # and show in a dialog
-        
     # appending digits to input    
     
     def append_digit0(self):
@@ -248,7 +239,11 @@ class ActionFunctions():
         self.xFlag = False
 
 
-    # doing XY operations and functions ------------------------------------------
+    # doing discrete XY operations and functions #######################
+    '''
+    Discrete Variable Functions
+    '''
+        
     def do_add(self):
         # check for entered button
         if not self.xFlag:
@@ -687,6 +682,9 @@ class ActionFunctions():
         print("exp of x is {}".format(self.resVar))
         print('exp()')
         
+    def do_factorial(self):
+        print("factorial pending")
+        
     def get_e(self):
         # get constant e
         self.x = mt.e
@@ -848,25 +846,12 @@ class ActionFunctions():
 
         print("dividing L by x")
         print("dividend is {}".format(self.L))
-    
-    def do_switchxL(self):
-        #=======================================================================
-        # temp = self.y
-        # self.y = self.x
-        # self.x = temp
-        # self.yValStr['text'] = str(self.y)
-        # self.inxStr.delete(0,tk.END)
-        # self.inxStr.insert(tk.INSERT, str(self.x))
-        # self.history.insert(tk.END, 'EXCHG X & Y  \n' + 'x = ' + str(self.x)+',  y = ' + str(self.y) + '\n')
-        #=======================================================================
         
-        print ('not implemented due to  datatype issues')
-        
+    # List Functions #######################################
     
-
-        # do something else to (x)
-        print('x^y')
-        print("y power of x is {}".format(self.resVar))
+    '''
+    List Mathematics FUnctions
+    '''
         
     def do_sumL(self):
         # check for entered button
@@ -903,14 +888,13 @@ class ActionFunctions():
         # log action to history 
         self.history.see(tk.END)
         # clear register before transferring result there
-        if (len(self.inLStr.get(1.0,tk.END))) > 0:
-            self.inLStr.delete(1.0,tk.END)
+
         if (len(self.inxStr.get())) > 0:
             self.inxStr.delete(0,tk.END)
-            print("cleared")
+
         self.inxStr.insert(tk.INSERT, str(self.x))
         self.inLStr.insert(tk.INSERT, str(self.L))
-        self.history.insert(tk.END, 'PROD of L  ' + str(self.L) + '\n')
+        self.history.insert(tk.END, 'PROD of L  ' + str(self.x) + '\n')
         # set up for chain operation
         self.xFlag = True
         self.inxStr.focus()
@@ -1323,7 +1307,255 @@ class ActionFunctions():
         self.inxStr.focus()
         print('DEG2RAD')
         print("Deg to Radians of L is {}".format(self.L))
+        
+    '''
+    List Statistics Functions 
+    '''
+        
+    def do_LStats(self):
+            self.listFunctKeys.grid_forget()
+            self.xyFunctKeys.grid_forget()
+            self.listStatsKeys.grid() 
+            
+    def do_meanL(self):
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        self.x =  st.mean(self.L)
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inLStr.get(1.0,tk.END))) > 0:
+            self.inLStr.delete(1.0,tk.END)
+        if (len(self.inxStr.get())) > 0:
+            self.inxStr.delete(0,tk.END)
+            print("cleared")
+        self.inxStr.insert(tk.INSERT, str(self.x))
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'MEAN of L  ' + str(self.x) + '\n')
+        # set up for chain operation
+        self.xFlag = True
+        self.inxStr.focus()
+        print("mean L")
+        print("mean of L is {}".format(self.x)) 
 
+    def do_medianL(self):
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        self.x =  st.median(self.L)
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inxStr.get())) > 0:
+            self.inxStr.delete(0,tk.END)
+        self.inxStr.insert(tk.INSERT, str(self.x))
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'MEDIAN of L  ' + str(self.x) + '\n')
+        # set up for chain operation
+        self.xFlag = True
+        self.inxStr.focus()
+        print("median L")
+        print("median of L is {}".format(self.x)) 
+        
+    def do_minL(self):
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        self.x =  min(self.L)
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inxStr.get())) > 0:
+            self.inxStr.delete(0,tk.END)
+        self.inxStr.insert(tk.INSERT, str(self.x))
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'MIN of L  ' + str(self.x) + '\n')
+        # set up for chain operation
+        self.xFlag = True
+        self.inxStr.focus()
+        print("minimum L")
+        print("minimum value of L is {}".format(self.x))
+        
+    def do_maxL(self):
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        self.x =  max(self.L)
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inxStr.get())) > 0:
+            self.inxStr.delete(0,tk.END)
+        self.inxStr.insert(tk.INSERT, str(self.x))
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'MAX of L  ' + str(self.x) + '\n')
+        # set up for chain operation
+        self.xFlag = True
+        self.inxStr.focus()
+        print("maximum L")
+        print("maximum value of L is {}".format(self.x))
+        
+    def do_pstdevL(self):
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        self.x =  st.pstdev(self.L)
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inxStr.get())) > 0:
+            self.inxStr.delete(0,tk.END)
+        self.inxStr.insert(tk.INSERT, str(self.x))
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'PSD of L  ' + str(self.x) + '\n')
+        # set up for chain operation
+        self.xFlag = True
+        self.inxStr.focus()
+        print("pop StDev L")
+        print("Pop StDev of L is {}".format(self.x))
+        
+    def do_countL(self):
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        self.x =  len(self.L)
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inxStr.get())) > 0:
+            self.inxStr.delete(0,tk.END)
+        self.inxStr.insert(tk.INSERT, str(self.x))
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, 'n of L  ' + str(self.x) + '\n')
+        # set up for chain operation
+        self.xFlag = True
+        self.inxStr.focus()
+        print("n L")
+        print("n of L is {}".format(self.x))
+        
+    def do_quartile1L(self):
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        self.x =  np.percentile(self.L, 25)
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inxStr.get())) > 0:
+            self.inxStr.delete(0,tk.END)
+        self.inxStr.insert(tk.INSERT, str(self.x))
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, '1st QUART of L  ' + str(self.x) + '\n')
+        # set up for chain operation
+        self.xFlag = True
+        self.inxStr.focus()
+        print("1st QUART of L")
+        print("1st QUART of L is {}".format(self.x))
+        
+    def do_quartile3L(self):
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        self.x =  np.percentile(self.L, 75)
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inxStr.get())) > 0:
+            self.inxStr.delete(0,tk.END)
+        self.inxStr.insert(tk.INSERT, str(self.x))
+        self.inLStr.insert(tk.INSERT, str(self.L))
+        self.history.insert(tk.END, '3rd QUART of L  ' + str(self.x) + '\n')
+        # set up for chain operation
+        self.xFlag = True
+        self.inxStr.focus()
+        print("3rd QUART of L")
+        print("3rd QUART of L is {}".format(self.x))
+        
+    def do_svTtestL(self):
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        popmean =  st.mean(self.L)
+        TP = stats.ttest_1samp(self.L, popmean)
+        print(TP)
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inxStr.get())) > 0:
+            self.inxStr.delete(0,tk.END)
+            print("cleared")
+        self.inxStr.insert(tk.INSERT, str(TP))
+        self.history.insert(tk.END, 'SVTtest of L  ' + str(TP) + '\n')
+        # set up for chain operation
+        self.xFlag = True
+        self.inxStr.focus()
+        print("SVTtestan L")
+        print("SVTtest of L is {}".format(TP)) 
+        
+    def do_svZtestL(self):
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        popmean =  st.mean(self.L)
+        TP = stats.ttest_1samp(self.L, popmean)
+        # log action to history 
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inxStr.get())) > 0:
+            self.inxStr.delete(0,tk.END)
+            print("cleared")
+        self.inxStr.insert(tk.INSERT, str(TP))
+        self.history.insert(tk.END, 'SVTtest of L  ' + str(TP) + '\n')
+        # set up for chain operation
+        self.xFlag = True
+        self.inxStr.focus()
+        print("SVTtestan L")
+        print("SVTtest of L is {}".format(TP)) 
+        
+    def do_CI95L(self):
+        CI95 = stats.t.interval(0.95, len(self.L)-1, loc=np.mean(self.L), scale=stats.sem(self.L))
+        self.history.see(tk.END)
+        # clear register before transferring result there
+        if (len(self.inxStr.get())) > 0:
+            self.inxStr.delete(0,tk.END)
+            print("cleared")
+        self.inxStr.insert(tk.INSERT, str(CI95))
+        self.history.insert(tk.END, 'SVTtest of L  ' + str(CI95) + '\n')
+        # set up for chain operation
+        self.xFlag = True
+        self.inxStr.focus()
+        print("SVTtestan L")
+        print("SVTtest of L is {}".format(CI95))    
+        
+    def do_histoL(self):
+        if not self.Lflag:
+            self.arithmeticError()
+            return
+        # add variables entered together
+        mu = st.mean(self.L)
+        sigma = st.pstdev(self.L)
+        # the histogram of the data
+        n, bins, patches = plt.hist(self.L, 10, normed=1, facecolor='green', alpha=0.75)
+        #best fit line
+        y = mlab.normpdf( bins, mu, sigma)
+        l = plt.plot(bins, y, 'r--', linewidth=1)
+        plt.xlabel('Values')
+        plt.ylabel('Probability')
+        plt.title(r'Histogram of L:')
+        plt.axis([0, 100, 0, 0.03])
+        plt.grid(True)
+        plt.show()
         
     def do_blank(self):
         # check for entered button
@@ -1336,6 +1568,11 @@ class ActionFunctions():
         # do something else to (x)
         print('unused key')
         
+    
+    # Note pad Functions ###################################################
+    '''
+    Note Pad and History Implenetation Functions
+    '''
         
     def do_note(self):
         # check for entered button
@@ -1377,6 +1614,8 @@ class ActionFunctions():
         print('Unable to Load notes, not implemented yet')
         self.underConstruction()
         
+    # history functions ##################
+           
     def do_clr_history(self, history):
         # clear the calculation history
         history.delete(1.0,tk.END)
@@ -1407,8 +1646,12 @@ class ActionFunctions():
         self.history.see(tk.END)
         print("history save finished")
         
-    # Menubar functions
     
+    # Menubar functions
+    '''
+    Menubar Function Implementations
+    '''
+        
     def do_toggleList(self):
         # toggle function flag
         if not self.Lflag:
@@ -1421,7 +1664,9 @@ class ActionFunctions():
             self.listFunctKeys.grid()
         else:
             self.listFunctKeys.grid_forget()
+            self.listStatsKeys.grid_forget()
             self.xyFunctKeys.grid()
         print('switch function keys')
-
+        
+    
 
