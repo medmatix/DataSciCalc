@@ -31,6 +31,8 @@ Next, the Tkinter GUI from SimpleCalc was rewritten.
 
 Finally the Code changes necessary to add list processing functionality to the basic calculator was undertaken. When completed the list elements were subject to the same functions being called for the list items, thus allowing the list data to be transformed in a simple way. More complex data munging being left for the Statistics section (tab4). See below for this discussion.
 
-## Expansion from a Simple Calculator to Statistics Capable Tool: 
+## Implementation
+
+### Expansion from a Simple Calculator to Statistics Capable Tool: 
   
 A simple caculator enhanced with list data capabilities, is expanded to a Data Science statistics aware tool manipulating and analyzing data in vector and matrix arrays. This marks the move to scipy/numpy capabilities for the Calculator paradigm.
