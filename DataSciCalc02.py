@@ -6,7 +6,7 @@
 DataSciCalc, Main Program Module
 
 Created on Sep 5, 2018
-@version: 0.19   
+@version: 0.20  
 @author: David A York
 @ copyright: 2018
 
@@ -34,10 +34,9 @@ import math
 import numpy as np
 from scipy import stats
 
-# other module imports
+# custom module imports
 from ActionFunctions import ActionFunctions as af
-from InputFunctions import InputFunctions as infn
-
+from Tooltips import createToolTip, ToolTip as tip
 # ~~~ End import section ~~~ =========================
 
 
@@ -181,11 +180,15 @@ class calcGUI():
         ttk.Label(self.display, text="  x (ANS)").grid(column=0, row=0, padx=4, pady=4,sticky='W')
         self.inxStr = ttk.Entry(self.display, width=68, text='x')
         self.inxStr.grid(column=1, row=0, padx=4, pady=4,sticky='W')
+        # Associated tool tip
+        inxStrDescr = 'Enter an x and press <<ENTER x>> or <<APPEND x>>,\n any previous x becomes y'
+        createToolTip(self.inxStr, inxStrDescr)
         
         # Show gurrent y value as Label
         ttk.Label(self.display, text="  y   = ").grid(column=0, row=1, padx=4, pady=4,sticky='W')
         self.yValStr = ttk.Label(self.display, width=68, text=str(self.y))
         self.yValStr.grid(column=1, row=1, padx=4, pady=4,sticky='W')
+        
           
         # Scrolling input field for L or y entry ( L is list of sequence entered, y is single number entered:
         # Using a scrolled Text control for List entry
@@ -193,23 +196,41 @@ class calcGUI():
         ttk.Label(self.display, text="List").grid(column=0, row=2, padx=4, pady=4,sticky='W')
         self.inLStr = scrolledtext.ScrolledText(self.display, width=scrolW1, height=scrolH1, wrap=tk.WORD)
         self.inLStr.grid(column=1, row=2, padx=4, pady=4, sticky='WE', columnspan=3)
+        # Associated tool tip
+        inLStrDescr = 'Enter a comma separated list of values and press <<ENTER L>>'
+        createToolTip(self.inLStr, inLStrDescr)
         
         # House keeping function buttons
         self.clrx = ttk.Button(self.inputAction, text=" CLR x ", command=lambda: af.do_clrx(self))
         self.clrx.grid(column=0, row=0, padx=4, pady=4)
+        # Associated tool tip
+        clrxDescr = 'CLEARS the x currently in display box,\n BUT not any x already entered.\n To Clear Internal Variables go to Edit<Clear All>'
+        createToolTip(self.clrx, clrxDescr)
 
         self.clrL = ttk.Button(self.inputAction, text=" CLR L ", command=lambda: af.do_clrL(self))
         self.clrL.grid(column=1, row=0, padx=4, pady=4)
+        # Associated tool tip
+        clrLDescr = 'CLEARS the list L currently in display box,\n BUT not any L already entered.\n To Clear Internal Variables go to Edit<Clear All>'
+        createToolTip(self.clrL, clrLDescr)
         
         self.toList = ttk.Button(self.inputAction, text="  ENTER L  ", command=lambda: af.do_enterL(self))
         self.toList.grid(column=2, row=0, padx=4, pady=4)
+        # Associated tool tip
+        toListDescr = 'MOVES string representation of above "List"\n into a the list of floats to act on'
+        createToolTip(self.toList, toListDescr)
         
         self.action_toxVar = ttk.Button(self.inputAction, text="ENTER x", command=lambda: af.do_enterx(self))
         self.action_toxVar.grid(column=3, row=0, padx=4, pady=6)
+        # Associated tool tip
+        toxVarDescr = 'MOVES displayed x above\n into a floats variable x'
+        createToolTip(self.action_toxVar, toxVarDescr)
         
         self.action_xtoList = ttk.Button(self.inputAction, text="APPEND x", command=lambda: af.do_appendx(self))
         self.action_xtoList.grid(column=4, row=0, padx=4, pady=6)
-
+        # Associated tool tip
+        xtoListDescr = 'APPENDS displayed x above onto a the "List" shown.\n and moves the new list to a list variable.\n"List" must have at least one starting value already'
+        createToolTip(self.action_xtoList, xtoListDescr)
+        
         # Populate inKeys frame with the digit input keys (buttons)
         # Adding digit entry buttons 1 to 3
         
@@ -242,15 +263,20 @@ class calcGUI():
         
         self.action_pi = ttk.Button(self.inKeys, text=" \u03C0 ", takefocus=False, command=lambda: af.get_pi(self))
         self.action_pi.grid(column=0, row=6, padx=4, pady=2)
+        # Associated tool tip
+        enterPIDescr = 'Enters the python internal PI value into x,\n moving the previous x to y'
+        createToolTip(self.action_pi, enterPIDescr)
         
         self.action0 = ttk.Button(self.inKeys, text=" 0 ", takefocus=False, command=lambda: af.append_digit0(self))
         self.action0.grid(column=1, row=6, padx=4, pady=2)  
         
         self.action_e = ttk.Button(self.inKeys, text=" e ", takefocus=False, command=lambda: af.get_e(self))
-        self.action_e.grid(column=2, row=6, padx=4, pady=2)
+        self.action_e.grid(column=2, row=6, padx=4, pady=2)# Associated tool tip
+        enterEDescr = 'Enters the python internal e (Euler Constant) value/n into x, moving the previous x to y'
+        createToolTip(self.action_e, enterEDescr)
                 
-        self.action_pi = ttk.Button(self.inKeys, text=" - ", takefocus=False, command=lambda: af.get_pi(self))
-        self.action_pi.grid(column=0, row=7, padx=4, pady=2)
+        self.action_minSgn = ttk.Button(self.inKeys, text=" - ", takefocus=False, command=lambda: af.append_minSgn(self))
+        self.action_minSgn.grid(column=0, row=7, padx=4, pady=2)
         
         self.actiondec = ttk.Button(self.inKeys, text=" . ", takefocus=False, command=lambda: af.append_dec(self))
         self.actiondec.grid(column=1, row=7, padx=4, pady=2)
@@ -273,78 +299,154 @@ class calcGUI():
         
         self.action_add = ttk.Button(self.xyFunctKeys, text=" y + x ", command=lambda: af.do_add(self))
         self.action_add.grid(column=0, row=0, padx=4, pady=6)
+        # Associated tool tip
+        additionDescr = 'Add x and y result to x'
+        createToolTip(self.action_add, additionDescr)
 
         self.action_subt = ttk.Button(self.xyFunctKeys, text=" y - x ", command=lambda: af.do_subt(self))
         self.action_subt.grid(column=1, row=0, padx=4, pady=6)
+        # Associated tool tip
+        subtractionDescr = 'Subtract x from y result to x'
+        createToolTip(self.action_subt, subtractionDescr)
         
         self.action_mult = ttk.Button(self.xyFunctKeys, text=" y * x ", command=lambda: af.do_mult(self))
         self.action_mult.grid(column=2, row=0, padx=4, pady=6)
+        # Associated tool tip
+        multiplicationDescr = 'Multiply x and y result to x'
+        createToolTip(self.action_mult, multiplicationDescr)
         
         self.action_div = ttk.Button(self.xyFunctKeys, text=" y / x ", command=lambda: af.do_div(self))
         self.action_div.grid(column=3, row=0, padx=4, pady=6)
+        # Associated tool tip
+        divisionDescr = 'Divide x into y result to x'
+        createToolTip(self.action_div, divisionDescr)
         
-        self.action_div = ttk.Button(self.xyFunctKeys, text=" y \u2194 x ", command=lambda: af.do_switchxy(self))
-        self.action_div.grid(column=4, row=0, padx=4, pady=6)
+        self.action_switchxy = ttk.Button(self.xyFunctKeys, text=" y \u2194 x ", command=lambda: af.do_switchxy(self))
+        self.action_switchxy.grid(column=4, row=0, padx=4, pady=6)
+        # Associated tool tip
+        switchDescr = 'Switch x and y values internally'
+        
+        createToolTip(self.action_switchxy, switchDescr)
                     
         self.action_sgn = ttk.Button(self.xyFunctKeys, text="+/-", command=lambda: af.do_sgn(self))
         self.action_sgn.grid(column=0, row=1, padx=4, pady=6)
+        # Associated tool tip
+        chgSgnDescr = 'Change sign of x in memory echo result to x field.\n NOT necessary to press ENTERx'
+        createToolTip(self.action_sgn, chgSgnDescr)
         
         self.action_inverse = ttk.Button(self.xyFunctKeys, text=" 1/x ", command=lambda: af.do_invert(self))
         self.action_inverse.grid(column=1, row=1, padx=4, pady=6)
+        # Associated tool tip
+        invertXDescr = 'Invert X in memory result to x.'
+        createToolTip(self.action_inverse, invertXDescr)
         
         self.action_power2 = ttk.Button(self.xyFunctKeys, text=" x\u00B2 ", command=lambda: af.do_power2(self))
         self.action_power2.grid(column=2, row=1, padx=4, pady=6)
-
+        # Associated tool tip
+        squareXDescr = 'Square X in memory result to x.'
+        createToolTip(self.action_power2, squareXDescr)
+        
         self.action_xpowy = ttk.Button(self.xyFunctKeys, text=" y\u207F ", command=lambda: af.do_xpowy(self))
         self.action_xpowy.grid(column=3, row=1, padx=4, pady=6)
+        # Associated tool tip
+        xpowyDescr = 'x to power y result to x.\n'
+        createToolTip(self.action_xpowy, xpowyDescr)
 
         self.action_sqrt = ttk.Button(self.xyFunctKeys, text=" \u221Ax", command=lambda: af.do_sqrt(self))
         self.action_sqrt.grid(column=4, row=1, padx=4, pady=6)
+        # Associated tool tip
+        sqrtDescr = 'Take square root of x result to x.\n'
+        createToolTip(self.action_sqrt, sqrtDescr)
         
         self.action_cos = ttk.Button(self.xyFunctKeys, text="cos x", command=lambda: af.do_cos(self))
         self.action_cos.grid(column=0, row=2, padx=4, pady=6)
+        # Associated tool tip
+        cosDescr = 'Take Cosine of x result to x.\n'
+        createToolTip(self.action_cos, cosDescr)
         
         self.action_sin = ttk.Button(self.xyFunctKeys, text="sin x", command=lambda: af.do_sin(self))
         self.action_sin.grid(column=1, row=2, padx=4, pady=6)
+        # Associated tool tip
+        sinDescr = 'Take Sine of x result to x.\n'
+        createToolTip(self.action_sin, sinDescr)
         
         self.action_tan = ttk.Button(self.xyFunctKeys, text="tan x", command=lambda: af.do_tan(self))
         self.action_tan.grid(column=2, row=2, padx=4, pady=6)
+        # Associated tool tip
+        tanDescr = 'Take tan of x result to x.\n'
+        createToolTip(self.action_tan, tanDescr)
         
         self.action_acos = ttk.Button(self.xyFunctKeys, text="acos x", command=lambda: af.do_acos(self))
         self.action_acos.grid(column=3, row=2, padx=4, pady=6)
+        # Associated tool tip
+        arcCosineDescr = 'Take arcCosine of x result to x.\n'
+        createToolTip(self.action_acos, arcCosineDescr)
         
         self.action_asin = ttk.Button(self.xyFunctKeys, text="asin x", command=lambda: af.do_asin(self))
         self.action_asin.grid(column=4, row=2, padx=4, pady=6)
+        # Associated tool tip
+        arcsinDescr = 'Take arcsine of x result to x.\n'
+        createToolTip(self.action_asin, arcsinDescr)
         
         self.action_atan = ttk.Button(self.xyFunctKeys, text="atan x", command=lambda: af.do_atan(self))
         self.action_atan.grid(column=0, row=3, padx=4, pady=6)
+        # Associated tool tip
+        arctanDescr = 'Take arctan of x result to x.\n'
+        createToolTip(self.action_atan, arctanDescr)
         
         self.action_log10 = ttk.Button(self.xyFunctKeys, text=" log10 x", command=lambda: af.do_log10(self))
         self.action_log10.grid(column=1, row=3, padx=4, pady=6)
+        # Associated tool tip
+        log10Descr = 'Take base 10 log of x result to x.\n'
+        createToolTip(self.action_log10, log10Descr)
         
         self.action_ln = ttk.Button(self.xyFunctKeys, text=" ln x ", command=lambda: af.do_ln(self))
         self.action_ln.grid(column=2, row=3, padx=4, pady=6)
+        # Associated tool tip
+        lnDescr = 'Take natural log of x result to x.\n'
+        createToolTip(self.action_ln, lnDescr)
         
         self.action_exp = ttk.Button(self.xyFunctKeys, text="exp(x)", command=lambda: af.do_exp(self))
         self.action_exp.grid(column=3, row=3, padx=4, pady=6)
+        # Associated tool tip
+        expDescr = 'Take exponent (base e to power) of x result to x.\n'
+        createToolTip(self.action_exp, expDescr)
         
         self.action_factorial = ttk.Button(self.xyFunctKeys, text=" x!", command=lambda: af.do_factorial(self))
         self.action_factorial.grid(column=4, row=3, padx=4, pady=6)
+        # Associated tool tip
+        factorialDescr = 'Take factorial of x result to x.\n'
+        createToolTip(self.action_factorial, factorialDescr)
         
         self.action_xrooty = ttk.Button(self.xyFunctKeys, text="\u207F\u221A y ", command=lambda: af.do_blank(self))
         self.action_xrooty.grid(column=0, row=4, padx=4, pady=6)
+        # Associated tool tip
+        xrootyDescr = 'Take xth root of y, result to x.\n'
+        createToolTip(self.action_xrooty, xrootyDescr)
         
-        self.action_log10 = ttk.Button(self.xyFunctKeys, text="  ", command=lambda: af.do_blank(self))
-        self.action_log10.grid(column=1, row=4, padx=4, pady=6)
+        self.action_blank = ttk.Button(self.xyFunctKeys, text="  ", command=lambda: af.do_blank(self))
+        self.action_blank.grid(column=1, row=4, padx=4, pady=6)
+        # Associated tool tip
+        blankDescr = 'Unassigned key'
+        createToolTip(self.action_blank, blankDescr)
         
-        self.action_ln = ttk.Button(self.xyFunctKeys, text="   ", command=lambda: af.do_blank(self))
-        self.action_ln.grid(column=2, row=4, padx=4, pady=6)
+        self.action_blank1 = ttk.Button(self.xyFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank1.grid(column=2, row=4, padx=4, pady=6)
+        # Associated tool tip
+        blankDescr = 'Unassigned key.\n'
+        createToolTip(self.action_blank1, blankDescr)
         
-        self.action_exp = ttk.Button(self.xyFunctKeys, text=" ", command=lambda: af.do_blank(self))
-        self.action_exp.grid(column=3, row=4, padx=4, pady=6)
+        self.action_blank2 = ttk.Button(self.xyFunctKeys, text=" ", command=lambda: af.do_blank(self))
+        self.action_blank2.grid(column=3, row=4, padx=4, pady=6)
+        # Associated tool tip
+        blankDescr = 'Unassigned key'
+        createToolTip(self.action_blank2, blankDescr)
         
         self.action_deg2rad = ttk.Button(self.xyFunctKeys, text="deg \u2192 rad", command=lambda: af.do_deg2rad(self))
         self.action_deg2rad.grid(column=4, row=4, padx=4, pady=6)
+        # Associated tool tip
+        deg2radDescr = 'Convert x from degrees to radians result to x.\n'
+        createToolTip(self.action_deg2rad, deg2radDescr)
         
         
         # List math functions Keys defined 

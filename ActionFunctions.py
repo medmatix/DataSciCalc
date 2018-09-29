@@ -219,7 +219,7 @@ class ActionFunctions():
         self.inxStr.insert(tk.INSERT, self.inxRegStr)
         self.xFlag = False
 
-    def append_minsgn(self):
+    def append_minSgn(self):
         self.inxRegStr = self.inxRegStr + '-'        
         self.inxStr.delete(0,tk.END)
         self.inxStr.insert(tk.INSERT, self.inxRegStr)    
