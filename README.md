@@ -36,3 +36,20 @@ Finally the Code changes necessary to add list processing functionality to the b
 ### Expansion from a Simple Calculator to Statistics Capable Tool: 
   
 A simple caculator enhanced with list data capabilities, is expanded to a Data Science statistics aware tool manipulating and analyzing data in vector and matrix arrays. This marks the move to scipy/numpy capabilities for the Calculator paradigm.
+
+#### Discussion:
+
+
+### Enhancing the Interface and Help
+
+An important part of usability is clarification of the interface and use documentation. As well an educational aspect is always welcome by student users but needs to be eaily bypassed for experienced users. This would include a fast look-up capability of even a more complete context sensitive help.
+
+#### Discussion:
+
+
+### The Statistical Interface
+
+
+### The Graphics and Plotting Interface
+
+
