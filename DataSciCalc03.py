@@ -6,7 +6,7 @@
 DataSciCalc, Main Program Module
 
 Created on Sep 5, 2018
-@version: 0.20  
+@version: 0.21  
 @author: David A York
 @ copyright: 2018
 
@@ -25,6 +25,7 @@ from tkinter import scrolledtext
 from tkinter import Menu
 from tkinter import Canvas
 from tkinter import messagebox as mBox
+from tkinter import simpledialog
 
 from os import path, makedirs
 import sys as sys
@@ -32,6 +33,7 @@ import time
 from datetime import datetime
 import math
 import numpy as np
+import pandas as pd
 from scipy import stats
 
 # custom module imports
@@ -49,11 +51,15 @@ inxRegStr = ''
 inLRegStr = []
 x = 0.0
 y = 0.0
-L = []
+L = list()
 resVar = 0.0
 xFlag = False
 Lflag = False
 logHistoryName = "historyLog"
+active_Dataset = 'none'
+dfTable = pd.DataFrame()
+arry = np.array(np.arange(10))
+
 
 ## ~~~ END of Glogal Declarations ~~ =================
 
@@ -61,6 +67,9 @@ logHistoryName = "historyLog"
 #=====================================================
 # Class definitions
 #=====================================================
+
+
+        
 
 class calcGUI():
     ''' 
@@ -75,12 +84,15 @@ class calcGUI():
 
         self.inxRegStr = ''
         self.inLRegStr = []
-        self.x = 0.0
-        self.y = 0.0
-        self.L = [0]
-        self.resVar = 0.0
+        self.x = x
+        self.y = y
+        self.L = L
+        self.resVar = resVar
         self.xFlag = xFlag
-        self.Lflag = Lflag   
+        self.Lflag = Lflag  
+        self.active_Dataset = active_Dataset
+        self.arry = arry
+        self.dfTable = dfTable
         
         # Create instance
         self.win = tk.Tk()
@@ -112,8 +124,11 @@ class calcGUI():
     # ##############################################################
     
     def info(self):
-        mBox.showinfo('About DataSciCalc_oldest', 'A Data Science Calculator\n\n (c) David A York, 2018\n http:crunches-data.appspot.com \nVersion: 0.2, development version 0.125 \nlicense: MIT/X-Windows')
-
+        mBox.showinfo('About DataSciCalc', 'A Data Science Calculator\n\n (c) David A York, 2018\n http:crunches-data.appspot.com \nVersion: 0.3, development version 0.125 \nlicense: MIT/X-Windows')
+    
+    def miscMessage(self, mTitle, strMessage):
+        mBox.showinfo(mTitle, strMessage)
+    
     # catch trying to cast a blank to a number
     def castError(self):
         mBox.showwarning(title= "Ooops!!!", message="The Input field can't be blank or non-mumeric \na number should be entered first, then ENTER.\n\nREVERSE POLISH Notation (RPN) means: enter all numbers, THEN choose an operation.The result is always brought forward as follow-up input in case needed\nOperations can be chained by just entering next input.")
@@ -142,8 +157,19 @@ class calcGUI():
         
     def displayxy(self):
         mBox._show(title= "Current x and y", message="x = " + str(self.x) + " y = " + str(self.y), _icon='', _type="")   
-            
-    # == GUI widget constructiom ==============================================
+    
+    # get input from user
+    def get1Answer(self, dquestion):
+        answer = simpledialog.askstring("Input", dquestion, parent=self.win)
+        if answer is not None:
+            return answer
+        else:
+            print("No Value enterd")
+            return 0
+                  
+    # #########################################################       
+    # -- GUI widget construction
+    # ########################################################
     def createWidgets(self):        
         
         # Tab Controls introduced here --------------------------------------
@@ -695,13 +721,13 @@ class calcGUI():
         
         
         # Creating a container frame to hold tab2 widgets ============================
-        self.notes = ttk.LabelFrame(tab2, text=' Notes ')
+        self.notes = ttk.LabelFrame(tab2, text=' Notes ', width=56)
         self.notes.grid(column=0, row=0, padx=8, pady=4, sticky='W')
         
-        self.notesctl = ttk.LabelFrame(self.notes)
+        self.notesctl = ttk.LabelFrame(self.notes, width=56)
         self.notesctl.grid(column=0, row=0, padx=8, pady=4, sticky='W')
         
-        scrolW1  = 53; scrolH1  =  20
+        scrolW1  = 56; scrolH1  =  20
         self.scr_notes = scrolledtext.ScrolledText(self.notes, width=scrolW1, height=scrolH1, wrap=tk.WORD)
         self.scr_notes.grid(column=0, row=6, padx=4, pady=4, sticky='WE', columnspan=3)
         
@@ -718,14 +744,14 @@ class calcGUI():
         self.action_loadnotes = ttk.Button(self.notesctl, text="LOAD", command=lambda: af.do_load_note(self))
         self.action_loadnotes.grid(column=4, row=0, padx=4, pady=6)
         
-        self.calcHistory = ttk.LabelFrame(tab2, text=' History ')
+        self.calcHistory = ttk.LabelFrame(tab2, text=' History ', width=56)
         self.calcHistory.grid(column=0, row=30, padx=8, pady=4, sticky='W')
         
-        self.historyctl = ttk.LabelFrame(self.calcHistory)
+        self.historyctl = ttk.LabelFrame(self.calcHistory, width=56)
         self.historyctl.grid(column=0, row=0, padx=8, pady=4, sticky='W')
         
         # history display field part of Notes tab2
-        scrolW1  = 53; scrolH1  =  4
+        scrolW1  = 56; scrolH1  =  4
         self.history = scrolledtext.ScrolledText(self.calcHistory, width=scrolW1, height=scrolH1, wrap=tk.WORD)
         self.history.grid(column=0, row=6, padx=4, pady=4, sticky='WE', columnspan=3)
 
@@ -747,7 +773,7 @@ class calcGUI():
         
         
         # We are creating a container frame to hold tab3 widgets ============================
-        self.documentation = ttk.LabelFrame(tab3, text=' The Manual ')
+        self.documentation = ttk.LabelFrame(tab3, text=' The Manual ',width= 56)
         self.documentation.grid(column=0, row=3, padx=8, pady=4, sticky='W')
         
         # the index of the manual
@@ -758,29 +784,49 @@ class calcGUI():
         self.indexChosen.current(0)
         self.indexChosen.grid(column=0, row=1)
         
+        
+        # #######################################################
         # The Manual text                
         # Scrolling Documentation field:
-        # Creating a Label
+        # #######################################################
+        
         ttk.Label(self.documentation, text="Documentation:").grid(column=0, row=5, sticky='W')
         
         # Using a scrolled Text control for review of documentation
-        scrolW1  = 50; scrolH1  =  30
+        scrolW1  = 56; scrolH1  =  30
         self.manual = scrolledtext.ScrolledText(self.documentation, width=scrolW1, height=scrolH1, wrap=tk.WORD)
         self.manual.grid(column=0, row=6, padx=4, pady=4, sticky='WE', columnspan=3)
         section = "./documentation/all_docs.txt"
         docFile=open(section, 'r')
         self.manual.insert(tk.INSERT, '\n' + docFile.read())
         
+        # #########################################################
+        # Tab4 Multivariate statistics Analyses iterface code
+        #
+        # #########################################################
         # Creating a container frame to hold tab4 widgets
-        self.statistics = ttk.LabelFrame(tab4, text=' A Statistical Applications Interface ')
+        self.statistics = ttk.LabelFrame(tab4, text=' A Statistical Applications Interface ',width=68)
         self.statistics.grid(column=0, row=3, padx=8, pady=4, sticky='W')
-        self.statsctl = ttk.LabelFrame(self.statistics, text='Dataset')
-        self.statsctl.grid(column=0, row=0, padx=8, pady=4, sticky='W')
-          
-        self.get_Dataset = ttk.Button(self.statsctl, text="Select", command=lambda: af.do_blank(self))
+        
+        # Frames for data management keys
+        self.statsdata = ttk.LabelFrame(self.statistics, text='Dataset', width=56)
+        self.statsdata.grid(padx=8, pady=4, sticky='W')
+        
+        self.datalabel=ttk.Label(self.statsdata, text="Current Active Dataset:  ").grid(column=0,row = 0,sticky='W')
+        self.dataSetStr = ttk.Label(self.statsdata, text=active_Dataset)
+        self.dataSetStr.grid(column=1, row=0, padx=10, pady=4, sticky='W')
+        self.dataSetBtn = ttk.Button(self.statsdata, text="Refresh", command=lambda:af.refresh_DSet(self))
+        self.dataSetBtn.grid(column=3, row=0, padx=8, pady=4, sticky='W')   
+        self.dataEditBtn = ttk.Button(self.statsdata, text="Edit", command=lambda:af.refresh_DSet(self))
+        self.dataEditBtn.grid(column=4, row=0, padx=8, pady=4, sticky='W')                           
+
+        self.statsctl = ttk.LabelFrame(self.statistics,width=56)
+        self.statsctl.grid(column=0, row=1, padx=8, pady=4, sticky='W')
+         
+        self.get_Dataset = ttk.Button(self.statsctl, text="Select", command=lambda:af.do_setActiveDataset(self))
         self.get_Dataset.grid(column=0, row=0, padx=4, pady=4)
 
-        self.prt_Dataset = ttk.Button(self.statsctl, text=" Print ", command=lambda: af.do_blank(self))
+        self.prt_Dataset = ttk.Button(self.statsctl, text=" Print ", command=lambda: self.miscMessage("Dataset", "The currently active Dataset is \n{}".format(self.active_Dataset)))
         self.prt_Dataset.grid(column=1, row=0, padx=4, pady=4)
         
         self.grph_Dataset = ttk.Button(self.statsctl, text="  Graph  ", command=lambda: af.do_blank(self))
@@ -789,23 +835,184 @@ class calcGUI():
         self.save_Dataset = ttk.Button(self.statsctl, text="Save", command=lambda: af.do_blank(self))
         self.save_Dataset.grid(column=3, row=0, padx=4, pady=6)
         
-        self.funct_Dataset = ttk.Button(self.statsctl, text="Analyze", command=lambda: af.do_blank(self))
+        self.funct_Dataset = ttk.Button(self.statsctl, text="Load", command=lambda: self.miscMessage( "General Message", "This should bring up a file chooser"))
         self.funct_Dataset.grid(column=4, row=0, padx=4, pady=6)
         
-        
-        ttk.Label(self.statistics, text="    Statistics:  this application functionality has not yet been implemented ..........        ", foreground='red').grid(column=0, row=35, sticky='W')
+        # Incomplete Implementation notice #############
+        ttk.Label(self.statistics, text="    Statistics:  this application functionality has not yet been fully implemented .....        ", foreground='red').grid(column=0, row=35, sticky='W')
        
+       
+        # ###########################################################
+        # Container frame to hold Multivariate Statistics Functions
+        # ###########################################################
+        
+        self.mvStatFunctKeys = ttk.LabelFrame(self.statistics, text=' Multivariate Statistics Function Keys ')
+        self.mvStatFunctKeys.grid(column=0, row=6, padx=8, pady=8)
+        
+        self.action_blank = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank.grid(column=0, row=0, padx=4, pady=6)
+        # Associated tool tip
+        additionDescr = 'Not implemented yet'
+        createToolTip(self.action_blank, additionDescr)
+
+        self.action_blank0 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank0.grid(column=1, row=0, padx=4, pady=6)
+        # Associated tool tip
+        subtractionDescr = 'Not implemented yet'
+        createToolTip(self.action_blank0, subtractionDescr)
+        
+        self.action_blank1 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank1.grid(column=2, row=0, padx=4, pady=6)
+        # Associated tool tip
+        multiplicationDescr = 'Not implemented yet'
+        createToolTip(self.action_blank1, multiplicationDescr)
+        
+        self.action_blank2 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank2.grid(column=3, row=0, padx=4, pady=6)
+        # Associated tool tip
+        divisionDescr = 'Unassigned key'
+        createToolTip(self.action_blank2, divisionDescr)
+        
+        self.action_blank3 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank3.grid(column=4, row=0, padx=4, pady=6)
+        # Associated tool tip
+        switchDescr = 'Unassigned key'        
+        createToolTip(self.action_blank3, switchDescr)
+                    
+        self.action_blank4 = ttk.Button(self.mvStatFunctKeys, text="  ", command=lambda: af.do_blank(self))
+        self.action_blank4.grid(column=0, row=1, padx=4, pady=6)
+        # Associated tool tip
+        chgSgnDescr = 'Unassigned key'
+        createToolTip(self.action_blank4, chgSgnDescr)
+        
+        self.action_blank5 = ttk.Button(self.mvStatFunctKeys, text="    ", command=lambda: af.do_blank(self))
+        self.action_blank5.grid(column=1, row=1, padx=4, pady=6)
+        # Associated tool tip
+        invertXDescr = 'Unassigned key.'
+        createToolTip(self.action_blank5, invertXDescr)
+        
+        self.action_blank6 = ttk.Button(self.mvStatFunctKeys, text="    ", command=lambda: af.do_blank(self))
+        self.action_blank6.grid(column=2, row=1, padx=4, pady=6)
+        # Associated tool tip
+        squareXDescr = 'Unassigned key.'
+        createToolTip(self.action_blank6, squareXDescr)
+        
+        self.action_blank7 = ttk.Button(self.mvStatFunctKeys, text="    ", command=lambda: af.do_blank(self))
+        self.action_blank7.grid(column=3, row=1, padx=4, pady=6)
+        # Associated tool tip
+        xpowyDescr = 'Unassigned key.\n'
+        createToolTip(self.action_blank7, xpowyDescr)
+
+        self.action_blank8 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank8.grid(column=4, row=1, padx=4, pady=6)
+        # Associated tool tip
+        sqrtDescr = 'Unassigned key\n'
+        createToolTip(self.action_blank8, sqrtDescr)
+        
+        self.action_blank9 = ttk.Button(self.mvStatFunctKeys, text="  ", command=lambda: af.do_blank(self))
+        self.action_blank9.grid(column=0, row=2, padx=4, pady=6)
+        # Associated tool tip
+        cosDescr = 'Unassigned key\n'
+        createToolTip(self.action_blank9, cosDescr)
+        
+        self.action_blank10 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank10.grid(column=1, row=2, padx=4, pady=6)
+        # Associated tool tip
+        sinDescr = 'Unassigned key.\n'
+        createToolTip(self.action_blank10, sinDescr)
+        
+        self.action_blank11 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank11.grid(column=2, row=2, padx=4, pady=6)
+        # Associated tool tip
+        tanDescr = 'Unassigned key.\n'
+        createToolTip(self.action_blank11, tanDescr)
+        
+        self.action_blank12 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank12.grid(column=3, row=2, padx=4, pady=6)
+        # Associated tool tip
+        arcCosineDescr = 'Unassigned key.\n'
+        createToolTip(self.action_blank12, arcCosineDescr)
+        
+        self.action_blank13 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank13.grid(column=4, row=2, padx=4, pady=6)
+        # Associated tool tip
+        arcsinDescr = 'Unassigned key\n'
+        createToolTip(self.action_blank13, arcsinDescr)
+        
+        self.action_blank14 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank14.grid(column=0, row=3, padx=4, pady=6)
+        # Associated tool tip
+        arctanDescr = 'Unassigned key\n'
+        createToolTip(self.action_blank14, arctanDescr)
+        
+        self.action_blank15 = ttk.Button(self.mvStatFunctKeys, text="    ", command=lambda: af.do_blank(self))
+        self.action_blank15.grid(column=1, row=3, padx=4, pady=6)
+        # Associated tool tip
+        log10Descr = 'Unassigned key.\n'
+        createToolTip(self.action_blank15, log10Descr)
+        
+        self.action_blank16 = ttk.Button(self.mvStatFunctKeys, text="    ", command=lambda: af.do_blank(self))
+        self.action_blank16.grid(column=2, row=3, padx=4, pady=6)
+        # Associated tool tip
+        lnDescr = 'Unassigned key\n'
+        createToolTip(self.action_blank16, lnDescr)
+        
+        self.action_blank17 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank17.grid(column=3, row=3, padx=4, pady=6)
+        # Associated tool tip
+        expDescr = 'Unassigned key\n'
+        createToolTip(self.action_blank17, expDescr)
+        
+        self.action_blank18 = ttk.Button(self.mvStatFunctKeys, text="    ", command=lambda: af.do_blank(self))
+        self.action_blank18.grid(column=4, row=3, padx=4, pady=6)
+        # Associated tool tip
+        factorialDescr = 'Unassigned key.\n'
+        createToolTip(self.action_blank18, factorialDescr)
+        
+        self.action_blank19 = ttk.Button(self.mvStatFunctKeys, text="    ", command=lambda: af.do_blank(self))
+        self.action_blank19.grid(column=0, row=4, padx=4, pady=6)
+        # Associated tool tip
+        xrootyDescr = 'Unassigned key.\n'
+        createToolTip(self.action_blank19, xrootyDescr)
+        
+        self.action_blank20 = ttk.Button(self.mvStatFunctKeys, text="  ", command=lambda: af.do_blank(self))
+        self.action_blank20.grid(column=1, row=4, padx=4, pady=6)
+        # Associated tool tip
+        blankDescr = 'Unassigned key'
+        createToolTip(self.action_blank20, blankDescr)
+        
+        self.action_blank21 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank21.grid(column=2, row=4, padx=4, pady=6)
+        # Associated tool tip
+        blankDescr = 'Unassigned key.\n'
+        createToolTip(self.action_blank21, blankDescr)
+        
+        self.action_blank22 = ttk.Button(self.mvStatFunctKeys, text=" ", command=lambda: af.do_blank(self))
+        self.action_blank22.grid(column=3, row=4, padx=4, pady=6)
+        # Associated tool tip
+        blankDescr = 'Unassigned key'
+        createToolTip(self.action_blank22, blankDescr)
+        
+        # Convert degrees to radians
+        self.action_blank23 = ttk.Button(self.mvStatFunctKeys, text="   ", command=lambda: af.do_blank(self))
+        self.action_blank23.grid(column=4, row=4, padx=4, pady=6)
+        # Associated tool tip
+        deg2radDescr = 'Unassigned key\n'
+        createToolTip(self.action_blank23, deg2radDescr)
         
         
+        # ##########################################################
         # Creating a container frame to hold tab5 graphing widgets 
-        self.graphical = ttk.LabelFrame(tab5, text=' Graphical Output ')
+        # ##########################################################
+        
+        self.graphical = ttk.LabelFrame(tab5, text=' Graphical Output ', width=56)
         self.graphical.grid(column=0, row=0, padx=8, pady=4)
          
         # Adding a graphic window (canvas widget)
-        gw = Canvas(self.graphical, width=415, height=550)
+        gw = Canvas(self.graphical, width=460, height=550)
                
-        gw.create_rectangle(20, 20, 300, 200, fill="blue") 
-        gw.create_line(20, 190, 290, 20, fill="red", dash=(4, 4))
+        gw.create_rectangle(20, 20, 400, 200, fill="blue") 
+        gw.create_line(20, 190, 340, 20, fill="red", dash=(4, 4))
         gw.create_text(160,10, fill='green', font='Calabri',  text="A Nice Fudged Graph")
         gw.create_text(155,120, fill='white', text="Graphics NOT yet implemented")
         gw.create_text(5,100,text="Y")
@@ -851,7 +1058,8 @@ class calcGUI():
         
         # Add an View Menu
         viewMenu = Menu(menuBar, tearoff=0)
-        viewMenu.add_command(label="Toggle Functions", command=lambda:af.do_toggleList(self))
+        viewMenu.add_command(label="Toggle x/L Functions", command=lambda:af.do_toggleList(self))
+        viewMenu.add_command(label="Table data") #, command=lambda:displaydfTable(self))
         viewMenu.add_command(label="List data", command=self.displayList)
         viewMenu.add_command(label="x and y", command=self.displayxy)
         viewMenu.add_separator()
@@ -863,7 +1071,7 @@ class calcGUI():
         dataMenu = Menu(menuBar, tearoff=0)
         dataMenu.add_command(label="New Dataframe")
         dataMenu.add_command(label="Open Data")
-        dataMenu.add_command(label="Select Active Dataset")
+        dataMenu.add_command(label="Select Active Dataset", command=lambda: af.do_setActiveDataset(self))
         dataMenu.add_command(label="Save Data")
         menuBar.add_cascade(label="Data", menu=dataMenu)
         

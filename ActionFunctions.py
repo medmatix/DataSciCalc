@@ -9,6 +9,7 @@ updated Sep 21, 2018 13:46PM
 @copyright: 2018 David A York
 '''
 import tkinter as tk
+from tkinter import ttk
 from os import path, makedirs
 import time
 from datetime import datetime
@@ -19,6 +20,7 @@ from scipy import stats
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 from builtins import list
+from _hashlib import new
 
 
 #=====================================================
@@ -1485,7 +1487,7 @@ class ActionFunctions():
             self.arithmeticError()
             return
         # add variables entered together
-        popmean =  st.mean(self.L)
+        popmean =  0
         TP = stats.ttest_1samp(self.L, popmean)
         print(TP)
         # log action to history 
@@ -1507,7 +1509,7 @@ class ActionFunctions():
             self.arithmeticError()
             return
         # add variables entered together
-        popmean =  st.mean(self.L)
+        popmean = 0
         TP = stats.ttest_1samp(self.L, popmean)
         # log action to history 
         self.history.see(tk.END)
@@ -1553,7 +1555,7 @@ class ActionFunctions():
         plt.xlabel('Values')
         plt.ylabel('Probability')
         plt.title(r'Histogram of L:')
-        plt.axis([0, 100, 0, 0.03])
+        plt.axis([min(self.L), max(self.L), 0, 0.3])
         plt.grid(True)
         plt.show()
         
@@ -1650,8 +1652,7 @@ class ActionFunctions():
     # Menubar functions
     '''
     Menubar Function Implementations
-    '''
-        
+    '''    
     def do_toggleList(self):
         # toggle function flag
         if not self.Lflag:
@@ -1668,5 +1669,28 @@ class ActionFunctions():
             self.xyFunctKeys.grid()
         print('switch function keys')
         
-    
+    def do_setActiveDataset(self):
+        which_Dataset = 'Which dataset do you want to work with? \nCurrent, \n\tlist,\n\ttable,\nor a\n\tnew'
+        answer=self.get1Answer(which_Dataset)
+        
+        if answer=="list":
+            self.active_Dataset = "List L"
+        elif answer=="table":
+            self.active_Dataset = "table df"
+        elif( answer=="new"):
+            self.active_Dataset = "new data"
+            # load new data file
+        else:
+            print("There is no such dataset in memory, have you loaded it yet?")
+            return
+        
+    def refresh_DSet(self):
+        self.dataSetStr.grid_forget()
+        currentDSet = self.active_Dataset
+        self.dataSetStr = ttk.Label(self.statsdata, text=currentDSet)
+        self.dataSetStr.grid(column=1,row=0)
+        
+    def loadNewData(self):
+        print("bring up file chooser")
+        
 
