@@ -38,7 +38,7 @@ Finally the Code changes necessary to add list processing functionality to the b
 A simple caculator enhanced with list data capabilities, is expanded to a Data Science statistics aware tool manipulating and analyzing data in vector and matrix arrays. This marks the move to scipy/numpy capabilities for the Calculator paradigm.
 
 #### Discussion:
-
+The data to be worked with is discrete as expected for the simple calculator function, as well as data lists, allowing univariate analyses to be brought in the the calculator. 
 
 ### Enhancing the Interface and Help
 
@@ -47,9 +47,9 @@ An important part of usability is clarification of the interface and use documen
 #### Discussion:
 
 
-### The Statistical Interface
-
+### The Statistical Interface (Multivariate Statistics)
+The Multivariate statistical interface continues the calculator paradigm. This functionality risks a much busier interface, a beginning challenge for this tab. Also this is (for now) where the dataset is selected and worked with primarily. With this tab, access to loading univariate data into the List variable is enabled.
 
 ### The Graphics and Plotting Interface
-
+Where the introduction of data review with a historgram introduced a well procribed plot available in the univariate interface, more complex data visualization becomes available in the graphical tab. This applies the matplotlib functionality to the data we are accessing.
 
