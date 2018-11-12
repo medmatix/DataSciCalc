@@ -10,23 +10,32 @@ updated Sep 21, 2018 13:46PM
 '''
 import tkinter as tk
 from tkinter import ttk
-from os import path, makedirs
+from tkinter import filedialog, simpledialog
+from tkinter import messagebox as mBox
+import os 
+import csv
 import time
 from datetime import datetime
 import math as mt
 import statistics as st
 import numpy as np
 from scipy import stats
+import pandas as pd
+
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 from builtins import list
 from _hashlib import new
 
-
+from mbox import MessageBox
+from pandastable import Table, TableModel
+from tkinter import *
+from munging import Munging as mg
 #=====================================================
 # Class definitions
 #=====================================================
 
+        
 class ActionFunctions():
     '''
     GUI element activation Function calls, actions called in response to button presses
@@ -40,13 +49,15 @@ class ActionFunctions():
     '''
     def __init__(self):
         print("initialized ActionFunctions")
-
     # module variables and constants 
+    
 
     # Register and variable cleanup functions ############################
     '''
     Key pad Implementation Functions and Methods
     '''
+        
+    
         
     def do_clrx(self):
         # clear the entry in the current input register
@@ -1540,7 +1551,7 @@ class ActionFunctions():
         print("SVTtestan L")
         print("SVTtest of L is {}".format(CI95))    
         
-    def do_histoL(self):
+    def do_histL(self):
         if not self.Lflag:
             self.arithmeticError()
             return
@@ -1552,10 +1563,11 @@ class ActionFunctions():
         #best fit line
         y = mlab.normpdf( bins, mu, sigma)
         l = plt.plot(bins, y, 'r--', linewidth=1)
+        
         plt.xlabel('Values')
         plt.ylabel('Probability')
         plt.title(r'Histogram of L:')
-        plt.axis([min(self.L), max(self.L), 0, 0.3])
+        plt.axis([min(self.L), max(self.L), 0, 0.5])
         plt.grid(True)
         plt.show()
         
@@ -1573,7 +1585,7 @@ class ActionFunctions():
     
     # Note pad Functions ###################################################
     '''
-    Note Pad and History Implenetation Functions
+    Note Pad and History Implementation Functions
     '''
         
     def do_note(self):
@@ -1603,8 +1615,8 @@ class ActionFunctions():
     def do_save_note(self):
         notesFile = 'CalcNotes' + '.note'
         notesFolder = './notes/'
-        if not path.exists(notesFolder):
-            makedirs(notesFolder, exist_ok = True)
+        if not os.path.exists(notesFolder):
+            os.makedirs(notesFolder, exist_ok = True)
         openedFile = open(notesFolder + notesFile,"w")
         openedFile.write(self.scr_notes.get(1.0, tk.END) + '\n')
         openedFile.close()
@@ -1639,8 +1651,8 @@ class ActionFunctions():
     def do_save_history(self):
         historyFile = 'CalcHistory' + '.hist'
         historyFolder = './history/'
-        if not path.exists(historyFolder):
-            makedirs(historyFolder, exist_ok = True)
+        if not os.path.exists(historyFolder):
+            os.makedirs(historyFolder, exist_ok = True)
         openedFile = open(historyFolder + historyFile,"w")
         openedFile.write(self.history.get(1.0, tk.END) + '\n')
         openedFile.close()
@@ -1670,19 +1682,71 @@ class ActionFunctions():
         print('switch function keys')
         
     def do_setActiveDataset(self):
-        which_Dataset = 'Which dataset do you want to work with? \nCurrent, \n\tlist,\n\ttable,\nor a\n\tnew'
-        answer=self.get1Answer(which_Dataset)
-        
-        if answer=="list":
+        root = self.win
+        def mbox(msg, b1, b2, parent, cbo=False, cboList=[]):
+            msgbox = MessageBox(msg, b1, b2, parent, cbo, cboList)
+            msgbox.root.mainloop()
+            msgbox.root.destroy()
+            return msgbox.returning    
+        prompt = {}
+        allowedItems = ['list','dataframe','series','array']
+        prompt['answer'] = mbox('Select dataset to use', ('OK', 'ok'), ('Cancel', 'cancel'), root, cbo=True, cboList=allowedItems)
+        ans = prompt['answer']
+        print(ans)
+        if (ans == 'array'):
+            self.active_Dataset = "array"
+        elif (ans == 'dataframe'):
+            self.active_Dataset = "table dfT"
+        elif (ans == 'series'):
+            self.active_Dataset = "series S"
+        elif (ans == 'list'):
             self.active_Dataset = "List L"
-        elif answer=="table":
-            self.active_Dataset = "table df"
-        elif( answer=="new"):
-            self.active_Dataset = "new data"
-            # load new data file
-        else:
+        else: # list
+            # do stuff
             print("There is no such dataset in memory, have you loaded it yet?")
-            return
+
+    def getNewList(self):     
+        # Ask the user to select a single file name.
+        root=self.win
+        # Build a list of tuples for each file type the file dialog should display
+        my_filetypes = [('all files', '.*'), ('text files', '.txt'), ('comma separated', ".csv"), ('MS Excel ', ".xlt")]
+        answer = filedialog.askopenfilename(parent=root, initialdir=os.getcwd(), title="Please select a file:", filetypes=my_filetypes)
+        # reset list L to empty
+        fh = open(answer, 'r')
+        fline = fh.readline()
+        fh.close()
+        numVar = len(fline.split(','))
+        if (numVar != 1):
+            mBox.showinfo('Variable Count in csv file', 'There are too many dimensions for a single list or series\nLoad as a table instead\nThe number of variables is: {}'.format(numVar))
+            print("too many dimensions for a single list or series")
+        else:
+            self.L = list()
+            
+            with open(answer, 'r') as csvfile:
+                listreader = csv.reader(csvfile, delimiter=',')
+                for row in listreader:
+                    print(row[0]) 
+                    if row[0].isnumeric(): self.L.append(float(row[0])) 
+                    self.Lflag = True
+
+    def convertData(self, conversionData):     
+        '''
+        Method for interconversion of data, List, Series 1, Series 2, dataframe
+        Allows moving data during manipulation and munging. 
+        Also, constructs a true bivariate data set.
+        Finally allows new data entry in from keyboard to all variable typea
+        '''
+        if (conversionData == "LtoS1"):         # list into series data
+            pass
+        elif (conversionData == "S1toS2"):      # series 1 into series 2
+            pass
+        elif (conversionData == "S2toL"):       # series 1 data into list data
+            pass
+        elif (conversionData == "S1S2todf"):    # series data to bivariate data
+            pass                                #  or gradual dataframe enlargement
+        else:                                   #to Array or matrix
+            pass
+        
         
     def refresh_DSet(self):
         self.dataSetStr.grid_forget()
@@ -1690,7 +1754,72 @@ class ActionFunctions():
         self.dataSetStr = ttk.Label(self.statsdata, text=currentDSet)
         self.dataSetStr.grid(column=1,row=0)
         
-    def loadNewData(self):
-        print("bring up file chooser")
+    def loadData(self, active_Dataset): 
+        #Build a list of tuples for each file type the file dialog should display
+        dataset = active_Dataset        
+        my_filetypes = [('all files', '.*'), ('text files', '.txt'), ('comma separated', ".csv"), ('MS Excel ', ".xlt")]
+        answer = filedialog.askopenfilename(parent=self.win, initialdir=os.getcwd(), title="Please select a file:", filetypes=my_filetypes)
+        with open(answer, 'r') as fh:
+            fline = fh.readline()
+        with open(answer, 'r') as csvfile:
+            sniffer = csv.Sniffer()
+            has_header = sniffer.has_header(csvfile.read(2048))
+        #check for dimension
+        numVar = len(fline.split(','))
+        #check for string index
+
+        
+        #check for header
+        if(has_header):
+            print("header present")
+        else:
+            print("no header present")
+        df = pd.read_csv(answer)
+        if dataset == "table dfT":
+            self.dfT = df
+        elif dataset == "series S1":        
+            #check dimension
+            #check for header
+            #check for string index
+            if (numVar == 1):
+                self.S1 = df[df.columns[0]]
+            else:
+                mBox.showinfo('Variable Count in csv file', 'There are too many dimensions for a single list or series\nLoad as a table instead\nThe number of variables is: {}'.format(numVar))
+        elif dataset == "series S2":        
+            #check dimension
+            #check for header
+            #check for string index
+            if (numVar == 1):
+                self.S2 = df[df.columns[0]]
+            else:
+                mBox.showinfo('Variable Count in csv file', 'There are too many dimensions for a single list or series\nLoad as a table instead\nThe number of variables is: {}'.format(numVar))
+       
+        elif dataset == "List L":
+            #check dimension
+            #check for header
+            #check for string index
+            if(numVar == 1):
+                S = df[df.columns[0]]
+                L = S.tolist()
+                self.L = L
+            else:
+                mBox.showinfo('Variable Count in csv file', 'There are too many dimensions for a single list or series\nLoad as a table instead\nThe number of variables is: {}'.format(numVar))
+        elif dataset == "array":
+            self.arry = df.values
+            if(True):
+                pass
+            else:
+                print("Can't put mixed datatype in an array")
+        else:           # if unsure always put it in a pandas dataframe
+            self.dfT = pd.read_csv(answer)
+            
+
+
+ 
+
+        
+        
+        
+        
         
 

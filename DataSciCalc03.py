@@ -4,21 +4,22 @@
 '''
 
 DataSciCalc, Main Program Module
+@summary: This is a data science tool on a desktop calculator theme.
 
 Created on Sep 5, 2018
-@version: 0.21  
+@version: 0.25  
 @author: David A York
 @ copyright: 2018
-
 @license: MIT, https://opensource.org/licenses/MIT
+@acknowledgement: Farrell, D 2016 DataExplore: An Application for General Data Analysis in Research and Education. Journal of Open Research Software, 4: e9, DOI: http://dx.doi.org/10.5334/jors.94
 
 '''
 
 #======================================================
 # imports
 #======================================================
-
 # standard library imports
+    # tcl/tk imports
 import tkinter as tk
 from tkinter import ttk
 from tkinter import scrolledtext
@@ -26,7 +27,8 @@ from tkinter import Menu
 from tkinter import Canvas
 from tkinter import messagebox as mBox
 from tkinter import simpledialog
-
+from tkinter import *
+    # non-tk/gui imports
 from os import path, makedirs
 import sys as sys
 import time
@@ -34,11 +36,15 @@ from datetime import datetime
 import math
 import numpy as np
 import pandas as pd
+from pandastable import Table
 from scipy import stats
+
+from munging import Munging as mg
 
 # custom module imports
 from ActionFunctions import ActionFunctions as af
 from Tooltips import createToolTip, ToolTip as tip
+from mbox import MessageBox
 # ~~~ End import section ~~~ =========================
 
 
@@ -56,9 +62,11 @@ resVar = 0.0
 xFlag = False
 Lflag = False
 logHistoryName = "historyLog"
-active_Dataset = 'none'
-dfTable = pd.DataFrame()
+dfT = pd.DataFrame()
+S1 = pd.Series(data=None, index=None, dtype=None, name=None, copy=False, fastpath=False)
+S2 = pd.Series(data=None, index=None, dtype=None, name=None, copy=False, fastpath=False)
 arry = np.array(np.arange(10))
+active_Dataset = None
 
 
 ## ~~~ END of Glogal Declarations ~~ =================
@@ -90,9 +98,11 @@ class calcGUI():
         self.resVar = resVar
         self.xFlag = xFlag
         self.Lflag = Lflag  
-        self.active_Dataset = active_Dataset
+        self.active_Dataset = str(None)
         self.arry = arry
-        self.dfTable = dfTable
+        self.dfT = dfT
+        self.S1 = S1
+        self.S2 = S2 
         
         # Create instance
         self.win = tk.Tk()
@@ -124,7 +134,7 @@ class calcGUI():
     # ##############################################################
     
     def info(self):
-        mBox.showinfo('About DataSciCalc', 'A Data Science Calculator\n\n (c) David A York, 2018\n http:crunches-data.appspot.com \nVersion: 0.3, development version 0.125 \nlicense: MIT/X-Windows')
+        mBox.showinfo('About DataSciCalc', 'A Data Science Calculator\n  "Doing data science in a calculator paradigm"\n\n \u00A9 2018,David A York\nhttp://crunches-data.appspot.com\n\nVersion: 0.3, development version 0.25 \nDataSciCalc Repository:     https://medmatix.github.io/DataSciCalc/\nlicense: MIT/X-Windows')
     
     def miscMessage(self, mTitle, strMessage):
         mBox.showinfo(mTitle, strMessage)
@@ -143,7 +153,7 @@ class calcGUI():
         mBox.showerror(title= "Ooops!!!", message="you need to enter a value before selecting an operation")
         
     def underConstruction(self):
-        mBox.showinfo(title= "Men at Work!!", message="This function has not been implemented yet, \nsorrrrrrry - see next version :)")
+        mBox.showinfo("Men at Work!!", message="This function has not been implemented yet, \nsorrrrrrry - see next version :)")
         
     # -- make history display dialog and print 
     def historyToDialog(self):
@@ -152,8 +162,17 @@ class calcGUI():
     def notesToDialog(self):
         mBox._show(title="Notes", message=self.scr_notes.get(1.0, tk.END), _icon='', _type="")
         
-    def displayList(self):
+    def displayL(self):
         mBox._show(title= "Data List", message="List = " + self.L.__str__(), _icon='', _type="")
+    
+    def displayArray(self):
+        mBox._show(title= "Data List", message="Array = " + self.arry.__str__(), _icon='', _type="")
+    
+    def displaydfT(self):
+        mBox._show(title= "Data Table", message="Table = \n" + self.dfT.__str__(), _icon='', _type="")
+         
+    def displayS(self):
+        mBox._show(title= "Data Series", message="Series = \n" + self.S.__str__(), _icon='', _type="")
         
     def displayxy(self):
         mBox._show(title= "Current x and y", message="x = " + str(self.x) + " y = " + str(self.y), _icon='', _type="")   
@@ -186,6 +205,8 @@ class calcGUI():
         
         tab4 = ttk.Frame(tabControl)            # Add a fourth tab
         tabControl.add(tab4, text='Statistics')      # Make fourth tab visible
+        
+        
          
         tab5 = ttk.Frame(tabControl)            # Add a fifth tab
         tabControl.add(tab5, text='Graphics')      # Make fourth tab visible
@@ -711,8 +732,11 @@ class calcGUI():
         CI95ListDescr = 'Calculate a 95% Confidence interval for list mean'
         createToolTip(self.action_CI95L, CI95ListDescr)
         
-        self.action_blank = ttk.Button(self.listStatsKeys, text="Histogram", command=lambda: af.do_histoL(self))
-        self.action_blank.grid(column=3, row=2, padx=4, pady=6)
+        self.action_histL = ttk.Button(self.listStatsKeys, text="Histogram", command=lambda: af.do_histL(self))
+        self.action_histL.grid(column=3, row=2, padx=4, pady=6)
+        # Associated tool tip
+        HistListDescr = 'Show sample Frequency Distribution'
+        createToolTip(self.action_histL, HistListDescr)
                     
         
         # Now turn off all List Functions Keys
@@ -808,12 +832,13 @@ class calcGUI():
         self.statistics = ttk.LabelFrame(tab4, text=' A Statistical Applications Interface ',width=68)
         self.statistics.grid(column=0, row=3, padx=8, pady=4, sticky='W')
         
+        
         # Frames for data management keys
         self.statsdata = ttk.LabelFrame(self.statistics, text='Dataset', width=56)
         self.statsdata.grid(padx=8, pady=4, sticky='W')
         
         self.datalabel=ttk.Label(self.statsdata, text="Current Active Dataset:  ").grid(column=0,row = 0,sticky='W')
-        self.dataSetStr = ttk.Label(self.statsdata, text=active_Dataset)
+        self.dataSetStr = ttk.Label(self.statsdata, text=self.active_Dataset)
         self.dataSetStr.grid(column=1, row=0, padx=10, pady=4, sticky='W')
         self.dataSetBtn = ttk.Button(self.statsdata, text="Refresh", command=lambda:af.refresh_DSet(self))
         self.dataSetBtn.grid(column=3, row=0, padx=8, pady=4, sticky='W')   
@@ -835,11 +860,11 @@ class calcGUI():
         self.save_Dataset = ttk.Button(self.statsctl, text="Save", command=lambda: af.do_blank(self))
         self.save_Dataset.grid(column=3, row=0, padx=4, pady=6)
         
-        self.funct_Dataset = ttk.Button(self.statsctl, text="Load", command=lambda: self.miscMessage( "General Message", "This should bring up a file chooser"))
+        self.funct_Dataset = ttk.Button(self.statsctl, text="Load", command=lambda: af.loadData(self, active_Dataset))
         self.funct_Dataset.grid(column=4, row=0, padx=4, pady=6)
         
         # Incomplete Implementation notice #############
-        ttk.Label(self.statistics, text="    Statistics:  this application functionality has not yet been fully implemented .....        ", foreground='red').grid(column=0, row=35, sticky='W')
+        ttk.Label(self.statistics, text="    Statistics: this application functionality has not yet been fully implemented .....        ", foreground='red').grid(column=0, row=35, sticky='W')
        
        
         # ###########################################################
@@ -1036,6 +1061,7 @@ class calcGUI():
         fileMenu = Menu(menuBar, tearoff=0)
         fileMenu.add_command(label="New")
         fileMenu.add_command(label="Open")
+        fileMenu.add_command(label="File Info", command=lambda: mg.getFileInfo(self))
         fileMenu.add_command(label="Reload Registers")
         fileMenu.add_command(label="Save Registers")
         
@@ -1049,34 +1075,47 @@ class calcGUI():
         editMenu.add_command(label="Copy")
         editMenu.add_command(label="Paste")
         editMenu.add_command(label="Delete")
+        editMenu.add_separator()
         editMenu.add_command(label="Clear All", command=lambda: af.do_clrAllRegr(self))
         editMenu.add_command(label="Select")
         editMenu.add_separator()
-        editMenu.add_command(label="Enter")
         editMenu.add_command(label="Options")
         menuBar.add_cascade(label="Edit", menu=editMenu)
         
         # Add an View Menu
         viewMenu = Menu(menuBar, tearoff=0)
         viewMenu.add_command(label="Toggle x/L Functions", command=lambda:af.do_toggleList(self))
-        viewMenu.add_command(label="Table data") #, command=lambda:displaydfTable(self))
-        viewMenu.add_command(label="List data", command=self.displayList)
-        viewMenu.add_command(label="x and y", command=self.displayxy)
         viewMenu.add_separator()
-        viewMenu.add_command(label=" ")
-        viewMenu.add_command(label=" ")
+        viewMenu.add_command(label="Active Dataset", command=lambda: self.miscMessage("Dataset", "The currently active Dataset is \n{}".format(self.active_Dataset)))
+        viewMenu.add_command(label="Table data", command=lambda:self.displaydfT())
+        viewMenu.add_command(label="List data", command=self.displayL)
+        viewMenu.add_command(label="Series data", command=self.displayS)
+        viewMenu.add_command(label="Array data", command=self.displayArray)
+        viewMenu.add_command(label="x and y", command=self.displayxy)
         menuBar.add_cascade(label="View", menu=viewMenu)
         
         # Add data menus
         dataMenu = Menu(menuBar, tearoff=0)
-        dataMenu.add_command(label="New Dataframe")
-        dataMenu.add_command(label="Open Data")
+        dataMenu.add_command(label="New Table", command=lambda: af.loadData(self, "table dfT"))
+        dataMenu.add_command(label="New Series 1", command=lambda:af.loadData(self, "series S1"))
+        dataMenu.add_command(label="New Series 2", command=lambda:af.loadData(self, "series S2"))
+        dataMenu.add_command(label="New List", command=lambda:af.loadData(self, "List L"))
+        dataMenu.add_command(label="New Array", command=lambda:af.loadData(self, "array"))
+        dataMenu.add_separator()
         dataMenu.add_command(label="Select Active Dataset", command=lambda: af.do_setActiveDataset(self))
+        dataMenu.add_command(label="Load Active Data", command=lambda: af.loadData(self, active_Dataset))
+        dataMenu.add_separator()
+        dataMenu.add_command(label="Shift L to S1", command=lambda:af.convertData(self, "LtoS1)"))
+        dataMenu.add_command(label="Shift S1 to S2", command=lambda:af.convertData(self, "S1toS2"))
+        dataMenu.add_command(label="Shift S2 to L", command=lambda: af.convertData(self, "S2toL"))
+        dataMenu.add_command(label="Make S1 and S2 to dataframe", command=lambda:af.convertData(self, "S1S2todf"))
+        dataMenu.add_separator()
         dataMenu.add_command(label="Save Data")
         menuBar.add_cascade(label="Data", menu=dataMenu)
         
         # Add an tools Menu
         toolsMenu = Menu(menuBar, tearoff=0)
+        toolsMenu.add_command(label="Munging")
         toolsMenu.add_command(label="Math")
         toolsMenu.add_command(label="Descriptive")
         toolsMenu.add_command(label="Inference")
@@ -1088,18 +1127,15 @@ class calcGUI():
         # Add another Menu to the Menu Bar and an item
         helpMenu = Menu(menuBar, tearoff=0)
         helpMenu.add_command(label="Context Help")
-        helpMenu.add_command(label="Documentation")
+        helpMenu.add_command(label="Calculator Documentation")
+        helpMenu.add_command(label="Statistics Help")
         helpMenu.add_command(label="About", command=self.info)
         menuBar.add_cascade(label="Help", menu=helpMenu)
 
         # ~ end of menu bar ~ ------------------------------------------------- 
-        # Change the main windows icon
-        #self.win.iconbitmap(r'C:\Python34\DLLs\pyc.ico')
 
-        # Place cursor into name Entry
-        #nameEntered.focus()
         
-        # Set Focus to Tab2
+        # Set Focus to Tab
         tabControl.select(0)
 
 
@@ -1111,12 +1147,6 @@ class calcGUI():
 #======================
 # Start GUI
 #======================
-# tkgui = TKGUI()
-
-#running methods in threads
-#runT=Thread(target=oop.methodInAThread)
-
-# tkgui.win.mainloop()
 
 # ===============================================
 # Unit Testing Code
