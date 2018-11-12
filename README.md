@@ -23,11 +23,13 @@ Initially I made an [interface sketch](https://github.com/medmatix/DataSciCalc/b
 Next, the Tkinter GUI from SimpleCalc was rewritten.
 
 
-![ScreenShot1](DataSciCalc1.png) ![ScreenShot1](DataSciCalc1b.png)
+![ScreenShot1](DataSciCalc1.png) ![ScreenShot1b](DataSciCalc1b.png)
   
-![ScreenShot2](DataSciCalc2.png) ![ScreenShot3](DataSciCalc3.png)
-  
-![ScreenShot2](DataSciCalc4.png) ![ScreenShot5](DataSciCalc5.png)
+![ScreenShot1c](DataSciCalc1c.png)![ScreenShot2](DataSciCalc2.png) 
+
+![ScreenShot3](DataSciCalc3.png)![ScreenShot4](DataSciCalc4.png) 
+
+![ScreenShot5](DataSciCalc5.png)
 
 Finally the Code changes necessary to add list processing functionality to the basic calculator was undertaken. When completed the list elements were subject to the same functions being called for the list items, thus allowing the list data to be transformed in a simple way. More complex data munging being left for the Statistics section (tab4). See below for this discussion.
 
