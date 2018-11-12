@@ -2,7 +2,7 @@
 
 A Data Science Calculator project in python
   
-A programming project in python to implement with tkinter a simple data science calculator. This is another exercise but free for all to review and use if found helpful.Enjoy.
+A programming project in python to implement with tkinter a data science calculator extending my earlier Simple Calculator. This is another exercise but free for all to review and use if found helpful.Enjoy.
 
 This is implemented with python 3.7, Tkinter Matplotlib and SciPy and is a work in progress. 
 
@@ -12,11 +12,11 @@ I have tried to open my thinking process to view by including mind maps, doodles
 
 ## Motivation
   
-There are lots of calculators. There are even GUI based analytics tools. But a Data Science tool with a calculator paradigm is at best rare. My practice with SciPy/numpy and Matplotlib is an opportunity to play with the paradigm for application of data science functionality. Thugh simple, it is not envisioned as a toy app. There are I think lots on opportunities for a quick pop-up solution in mono and bivaraiate situations. Lets see how it grows. Comments are encourages. Enjoy.
+There are lots of calculators. There are even GUI based analytics tools. Ease of use varies a lot. But a Data Science tool with an intuitive calculator paradigm is at best rare. My practice with SciPy/numpy, Pandas and Matplotlib is an opportunity to play with the paradigm for application of data science functionality. Though simple, it is not envisioned as a toy app. There are I think lots on opportunities for a quick pop-up solution in mono and bivaraiate situations. Lets see how it grows. Comments are encouraged. Enjoy.
 
 ## Realization:
 
-I have already practiced with Tkinter buidling a RPN Calculator, [SimpleCalc.](https://medmatix.github.io/SimpleCalc/) With this starting point the interface is re-worked to include various kinds of input, simple variable <entry>, sequence of python <List> oriented input and PANDAS dataframe oriented CSV file import input. From the the button and menu actions had to be revised to adapt actions to the kind of input targeted.
+As I noted, I have already practiced with Tkinter buidling a RPN Calculator, [SimpleCalc.](https://medmatix.github.io/SimpleCalc/) With this starting point the interface is re-worked to include various kinds of input, simple variable <entry>, sequence of python <List> oriented input and PANDAS dataframe oriented CSV file import input. From the the button and menu actions had to be revised to adapt actions to the kind of input targeted.
   
 Initially I made an [interface sketch](https://github.com/medmatix/DataSciCalc/blob/master/GUI%20Layout%20Notes%20page_8.pdf) on graph paper.
 
@@ -35,12 +35,12 @@ Finally the Code changes necessary to add list processing functionality to the b
 
 ## Implementation
 
-### Expansion from a Simple Calculator to Statistics Capable Tool: 
+### Expansion from a Simple Calculator to Statistics Capable Tool, and Beyond: 
   
-A simple caculator enhanced with list data capabilities, is expanded to a Data Science statistics aware tool manipulating and analyzing data in vector and matrix arrays. This marks the move to scipy/numpy capabilities for the Calculator paradigm.
+A simple caculator enhanced with list data capabilities, is expanded to a Data Science statistics aware tool manipulating and analyzing data in vector and matrix arrays. This marks the move to scipy/numpy capabilities for the Calculator paradigm. By further extension adding Pandas Series and Dataframes would mark a jump to engage Data Science capabilities in the Calculartor paradigm. 
 
 #### Discussion:
-The data to be worked with is discrete as expected for the simple calculator function, as well as data lists, allowing univariate analyses to be brought in the the calculator. 
+The data to be worked with is to start discrete as expected for the simple calculator function, as well as involving data lists, allowing univariate analyses to be brought in the the calculator. 
 
 ### Enhancing the Interface and Help
 
