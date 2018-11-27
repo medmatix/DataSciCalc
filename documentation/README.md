@@ -1,2 +1,24 @@
 # Data Science Calculator Documentation
 
+## Introduction
+
+The SimpleCalc/DataSciCalc apps are reverse polish notation applications (like the HP calculators) where the operands are entered fully before an operator is selected. The operands entered of course depend on whether a unary of binary operator is to be used. For a simple addition binary operation that would be:
+
+			<OPERAND><ENTER>OPERAND<ENTER><OPERATOR>
+			
+			i.e.   1<ENTER>2<ENTER><+>
+			output  3
+			
+All operands, including constant keys PI, e, and phi still need and <ENTER> after like any such input.
+
+To assist with chaining of operations, output (results) of operators and functions are always automatically entered entered after being calculated, i.e. the <+> is really a <+>-<ENTER> operation pair.
+			
+The a unary operation like a SQRT function requires only prior entry of a single operand, and once again the unary operation (being a function) automatically enters the result for the next operation. So that,
+
+			        55<ENTER><SQRT> 
+					
+				is actually,
+				
+					55<ENTER><SQRT><ENTER>
+					
+Where the input is a list, all list items are entered by the keyboard or by appending Xes until the list is built. The a function to operate on all list items is selected. If the function is a binary function an x is entered as well prior to selecting the binary operation ( L^x )
